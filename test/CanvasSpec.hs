@@ -42,7 +42,7 @@ spec = describe "Canvas" $ do
 
   it "PPM: Ensure row width is smaller than 70 characters" $ do
     let c = Color 1 0.8 0.6
-        canvas = updatePixels [((x, y), c) | x <- [0..9], y <- [0..1]] $ makeCanvas (10, 2)
+        canvas = writePixels [((x, y), c) | x <- [0..9], y <- [0..1]] $ makeCanvas (10, 2)
         ppm = canvasToPPM canvas
     ppm `shouldBe` "P3\n\
                    \10 2\n\

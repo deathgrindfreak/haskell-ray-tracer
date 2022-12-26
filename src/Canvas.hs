@@ -7,7 +7,7 @@ module Canvas
   , makeCanvas
   , pixelAt
   , writePixel
-  , updatePixels
+  , writePixels
   , canvasToPPM
   ) where
 
@@ -42,8 +42,8 @@ writePixel :: (Int, Int)
 writePixel coord color c =
   c { pixels = pixels c V.// [(toIndex coord c, color)] }
 
-updatePixels :: [((Int, Int), Color Double)] -> Canvas -> Canvas
-updatePixels coords c =
+writePixels :: [((Int, Int), Color Double)] -> Canvas -> Canvas
+writePixels coords c =
   c { pixels = pixels c V.// map (first (`toIndex` c)) coords }
 
 canvasToPPM :: Canvas -> T.Text
@@ -57,19 +57,19 @@ canvasToPPM Canvas {width, height, pixels} =
       ]
 
     body :: V.Vector (Color Double) -> B.Builder
-    body = fst
-      . V.ifoldl' breakLines (B.fromString "", 0)
+    body =
+      (\(f, _, _) -> f)
+      . V.ifoldl' breakLines (B.fromString "", 0, True)
       . V.concatMap (\(Color r g b) -> V.fromList $ map (show . toPixel) [r, g, b])
 
-    breakLines :: (B.Builder, Int) -> Int -> String -> (B.Builder, Int)
-    breakLines (bd, lc) i color =
-      let atStart = bd == B.fromString ""
-          newLC = lc + length color + if atStart then 0 else 1
+    breakLines :: (B.Builder, Int, Bool) -> Int -> String -> (B.Builder, Int, Bool)
+    breakLines (bd, lc, atStart) i color =
+      let newLC = lc + length color + if atStart then 0 else 1
           needsNL = i `mod` (width * 3) == 0 || newLC >= 70
           sep = if | atStart -> B.fromString ""
                    | needsNL -> B.singleton '\n'
                    | otherwise -> B.singleton ' '
-       in (bd <> sep <> B.fromString color, if needsNL then length color else newLC)
+       in (bd <> sep <> B.fromString color, if needsNL then length color else newLC, False)
 
     toPixel :: Double -> Int
     toPixel p = max 0 . min 255 . round $ 255 * p

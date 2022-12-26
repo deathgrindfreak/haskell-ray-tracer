@@ -35,6 +35,7 @@ library:
   source-dirs: src
   exposed-modules:
     - Lib
+    - Example.Projectile
 
 executables:
   ray-tracer-challenge:
