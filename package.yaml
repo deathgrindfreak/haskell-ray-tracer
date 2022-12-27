@@ -18,6 +18,8 @@ dependencies:
   - hspec-discover
   - vector
   - text
+  - QuickCheck
+  - checkers
 
 ghc-options:
 - -Wall
@@ -29,12 +31,14 @@ ghc-options:
 - -Wmissing-home-modules
 - -Wpartial-fields
 - -Wredundant-constraints
-- -threaded
 
 library:
   source-dirs: src
   exposed-modules:
-    - Lib
+    - RayTracer.Color
+    - RayTracer.Canvas
+    - RayTracer.Tuple
+    - RayTracer.Matrix
     - Example.Projectile
 
 executables:

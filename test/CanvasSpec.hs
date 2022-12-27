@@ -3,7 +3,8 @@
 module CanvasSpec (spec) where
 
 import SpecHelper
-import Lib
+import RayTracer.Canvas
+import RayTracer.Color
 import Control.Monad (forM_)
 import qualified Data.Text.Lazy as T
 

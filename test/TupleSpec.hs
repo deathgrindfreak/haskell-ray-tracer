@@ -1,7 +1,7 @@
 module TupleSpec (spec) where
 
 import SpecHelper
-import Lib
+import RayTracer.Tuple
 
 spec :: Spec
 spec = describe "Tuple" $ do

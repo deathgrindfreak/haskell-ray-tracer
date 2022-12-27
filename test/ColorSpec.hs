@@ -1,7 +1,17 @@
 module ColorSpec (spec) where
 
 import SpecHelper
-import Lib
+import RayTracer.Color
+
+import Test.QuickCheck
+import Test.QuickCheck.Checkers
+import Test.QuickCheck.Classes
+
+instance Arbitrary a => Arbitrary (Color a) where
+  arbitrary = Color <$> arbitrary <*> arbitrary <*> arbitrary
+
+instance Eq a => EqProp (Color a) where
+  (=-=) = eq
 
 spec :: Spec
 spec = describe "Color" $ do
@@ -12,3 +22,11 @@ spec = describe "Color" $ do
   it "Multiplication" $ do
     Color 2 3 4 * Color 1 2 3 `shouldBe` Color 2 6 12
     2 * Color 1 2 3 `shouldBe` Color 2 4 6
+  it "Functor" $ do
+    let colorTrigger :: Color (Double, Double, Double)
+        colorTrigger = undefined
+    quickBatch (functor colorTrigger)
+  it "Applicative" $ do
+    let colorTrigger :: Color (Double, Double, Double)
+        colorTrigger = undefined
+    quickBatch (applicative colorTrigger)

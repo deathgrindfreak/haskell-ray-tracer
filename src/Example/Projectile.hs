@@ -3,9 +3,9 @@ module Example.Projectile (run) where
 import qualified Data.Text.Lazy as T
 import Data.List (unfoldr)
 
-import Canvas
-import Color
-import Tuple
+import RayTracer.Canvas
+import RayTracer.Color
+import RayTracer.Tuple
 
 data Projectile = Projectile
   { position :: Tuple Double

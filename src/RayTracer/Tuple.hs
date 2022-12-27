@@ -1,4 +1,4 @@
-module Tuple
+module RayTracer.Tuple
   ( Tuple(..)
   , cross
   , dot
@@ -12,13 +12,16 @@ data Tuple a
   | Scalar a
   deriving (Show, Eq)
 
+instance Functor Tuple where
+  fmap f (Vec a b c) = Vec (f a) (f b) (f c)
+  fmap f (Point a b c) = Point (f a) (f b) (f c)
+  fmap f (Scalar a) = Scalar (f a)
+
 instance (RealFloat a) => Num (Tuple a) where
   {-# SPECIALIZE instance Num (Tuple Float) #-}
   {-# SPECIALIZE instance Num (Tuple Double) #-}
 
-  negate (Vec x y z) = Vec (-x) (-y) (-z)
-  negate (Point x y z) = Point (-x) (-y) (-z)
-  negate (Scalar x) = Scalar (-x)
+  negate = fmap negate
 
   Vec x1 y1 z1 + Vec x2 y2 z2 = Vec (x1 + x2) (y1 + y2) (z1 + z2)
   Point x1 y1 z1 + Vec x2 y2 z2 = Point (x1 + x2) (y1 + y2) (z1 + z2)
