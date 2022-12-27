@@ -41,12 +41,16 @@ plotProjectile :: Projectile -> Environment -> [(Int, Int)]
 plotProjectile p e =
   unfoldr
   (\projectile ->
-        let p'@Projectile { position = Point _ y _ } = tick projectile e
+        let p' = tick projectile e
+            (_, y) = getPoint (position p')
          in if y <= 0 then Nothing else Just (toPoint p', p')
      )
   p
   where
-    toPoint Projectile { position = Point x y _ } = (round x, round y)
+    toPoint pr = let (x, y) = getPoint (position pr) in  (round x, round y)
+
+    getPoint (Point x y _) = (x, y)
+    getPoint _ = error "Not a point"
 
 tick :: Projectile -> Environment -> Projectile
 tick p@(Projectile pos v) (Environment g w) =
