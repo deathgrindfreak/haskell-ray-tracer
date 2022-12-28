@@ -3,10 +3,13 @@
 module RayTracer.Matrix
   ( Matrix(..)
   , (!)
+  , update
+  , (//)
   , elemAt
-  , toLists
+  , matrix
   , fromList
   , fromLists
+  , toLists
   , elementwise
   , fromTupleRow
   , fromTupleCol
@@ -14,14 +17,21 @@ module RayTracer.Matrix
   , (<*|)
   , transpose
   , identity
+  , submatrix
+  , minor
+  , cofactor
+  , determinant
+  , isInvertable
+  , inverse
   )
 where
 
 import RayTracer.Tuple
 
 import qualified Data.Vector as V
-import Data.List (intercalate, foldl')
+import Data.List (intercalate)
 import Data.Bifunctor (Bifunctor(first))
+import Data.Maybe (fromJust)
 
 data Matrix a = M
   { rows :: Int
@@ -55,6 +65,13 @@ prettyPrintMatrix m@M { rows, cols } =
 instance Functor Matrix where
   fmap f m@M { elements } = m { elements = fmap f elements }
 
+matrix :: Int -> Int -> ((Int, Int) -> a) -> Matrix a
+matrix rows cols f =
+  M { rows
+    , cols
+    , elements = V.fromList [f (r, c) | r <- [0..rows - 1], c <- [0..cols - 1]]
+    }
+
 elementwise :: (a -> b -> c) -> Matrix a -> Matrix b -> Matrix c
 elementwise f (M ar ac ea) (M br bc eb) =
   if ar == br && ac == bc
@@ -74,6 +91,9 @@ instance Num a => Num (Matrix a) where
     where
       multRowCol r c = sum [m ! (r, i) * m' ! (i, c) | i <- [0..cols m - 1]]
   fromInteger = M 1 1 . V.singleton . fromInteger
+
+idx :: Matrix a -> Int -> Int -> Int
+idx M { cols } r c = c + r * cols
 
 elemAt :: Matrix a -> Int -> Int -> a
 elemAt m@M { elements } i j = elements V.! idx m i j
@@ -135,15 +155,36 @@ t <*| m =
       _ -> error "Improper multiplication result"
 
 identity :: Num a => Int -> Matrix a
-identity n = fromList n n (repeat 0) // [((i, i), 1) | i <- [0..n-1]]
+identity n = matrix n n (\(i, j) -> if i == j then 1 else 0)
 
 transpose :: Matrix a -> Matrix a
-transpose matrix@M { rows, cols } =
-  foldl' swap matrix [(i, j) | i <- [0..rows - 1], j <- [0..cols - 1], i <= j]
-  where
-    swap m@M{ elements = e } (i, j) =
-      let (a, b) = (idx m i j, idx m j i)
-       in m { elements = e V.// [(b, e V.! a), (a, e V.! b)] }
+transpose m@M { rows = n } = matrix n n (\(i, j) -> m ! (j, i))
 
-idx :: Matrix a -> Int -> Int -> Int
-idx M { cols } r c = c + r * cols
+submatrix :: Matrix a -> Int -> Int -> Matrix a
+submatrix m@M { rows, cols } r c =
+  matrix (rows-1) (cols-1) (\(i, j) ->
+                              let i' = if i < r then i else i + 1
+                                  j' = if j < c then j else j + 1
+                               in m ! (i', j'))
+
+minor :: Num a => Matrix a -> Int -> Int -> a
+minor m r c = determinant $ submatrix m r c
+
+cofactor :: Num a => Matrix a -> Int -> Int -> a
+cofactor m r c = (if even (r + c) then 1 else -1) * minor m r c
+
+determinant :: Num a => Matrix a -> a
+determinant m@M { rows, cols }
+  | rows /= cols = error "Can only take determinant of square matrix"
+  | rows == 2 = (m ! (0, 0)) * (m ! (1, 1)) - (m ! (1, 0)) * (m ! (0, 1))
+  | otherwise = sum [(m ! (0, c)) * cofactor m 0 c | c <- [0..cols - 1]]
+
+isInvertable :: (Num a, Eq a) => Matrix a -> Bool
+isInvertable m = determinant m /= 0
+
+inverse :: (Fractional a, Eq a) => Matrix a -> Maybe (Matrix a)
+inverse m
+  | not $ isInvertable m = Nothing
+  | otherwise =
+    let d = determinant m
+    in Just $ matrix (rows m) (cols m) (\(i, j) -> cofactor m j i / d)
