@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-type-defaults #-}
+
 module MatrixSpec (spec) where
 
 import Test.QuickCheck hiding (elements)
@@ -10,6 +12,7 @@ import Data.Functor ((<&>))
 import SpecHelper
 import RayTracer.Matrix
 import RayTracer.Tuple
+import Data.Maybe (fromJust)
 
 newtype Square = Square { toMatrix :: Matrix Double }
   deriving (Show)
@@ -256,12 +259,62 @@ spec = describe "Matrix" $ do
         then (inverse b >>= \b' -> return (a * b * b') <&> fmap (fromIntegral . round)) `shouldBe` Just a
         else inverse b `shouldBe` Nothing
 
+  it "Translation" $ do
+    let transform = translation 5 (-3) 2
+        inv = fromJust (inverse transform)
+        p = Point (-3) 4 5
+        v = Vec (-3) 4 5
+    transform |*> p `shouldBe` Point 2 1 7
+    inv |*> p `shouldBe` Point (-8) 7 3
+    transform |*> v `shouldBe` v
+
+  it "Scaling" $ do
+    let transform = scaling 2 3 4
+        inv = fromJust (inverse transform)
+        p = Point (-4) 6 8
+        v = Vec (-4) 6 8
+    transform |*> p `shouldBe` Point (-8) 18 32
+    transform |*> v `shouldBe` Vec (-8) 18 32
+    inv |*> v `shouldBe` Vec (-2) 2 2
+
+  it "Reflection" $ do
+    let transform = scaling (-1) 1 1
+        p = Point 2 3 4
+    transform |*> p `shouldBe` Point (-2) 3 4
+
+  it "Rotation X" $ do
+    let p = Point 0 1 0
+        halfQuarter = rotationX (pi / 4)
+        invHalfQuarter = fromJust (inverse halfQuarter)
+        fullQuarter = rotationX (pi / 2)
+    halfQuarter |*> p `shouldBe` Point 0 (sqrt 2 / 2) (sqrt 2 / 2)
+    fullQuarter |*> p `shouldBe` Point 0 0 1
+    invHalfQuarter |*> p `shouldBe` Point 0 (sqrt 2 / 2) (-sqrt 2 / 2)
+
+  it "Rotation Y" $ do
+    let p = Point 0 0 1
+        halfQuarter = rotationY (pi / 4)
+        fullQuarter = rotationY (pi / 2)
+    halfQuarter |*> p `shouldBe` Point (sqrt 2 / 2) 0 (sqrt 2 / 2)
+    fullQuarter |*> p `shouldBe` Point 1 0 0
+
+  it "Rotation Z" $ do
+    let p = Point 0 1 0
+        halfQuarter = rotationZ (pi / 4)
+        fullQuarter = rotationZ (pi / 2)
+    halfQuarter |*> p `shouldBe` Point (-sqrt 2 / 2) (sqrt 2 / 2) 0
+    fullQuarter |*> p `shouldBe` Point (-1) 0 0
+
+  it "Shearing" $ do
+    let p = Point 2 3 4
+    shearing 1 0 0 0 0 0 |*> p `shouldBe` Point 5 3 4
+    shearing 0 1 0 0 0 0 |*> p `shouldBe` Point 6 3 4
+    shearing 0 0 1 0 0 0 |*> p `shouldBe` Point 2 5 4
+    shearing 0 0 0 1 0 0 |*> p `shouldBe` Point 2 7 4
+    shearing 0 0 0 0 1 0 |*> p `shouldBe` Point 2 3 6
+    shearing 0 0 0 0 0 1 |*> p `shouldBe` Point 2 3 7
+
   it "Functor" $ do
     let matrixTrigger :: Matrix (Double, Double, Double)
         matrixTrigger = undefined
     quickBatch (functor matrixTrigger)
-
--- propertyMatrixInverse (Square m) =
---   if isInvertable m
---     then inverse m `shouldBe` Nothing
---     else (inverse m >>= (round <$>) . inverse) `shouldBe` Just m

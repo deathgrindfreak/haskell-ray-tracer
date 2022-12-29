@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE LambdaCase #-}
 
 module RayTracer.Matrix
   ( Matrix(..)
@@ -23,6 +24,12 @@ module RayTracer.Matrix
   , determinant
   , isInvertable
   , inverse
+  , translation
+  , scaling
+  , rotationX
+  , rotationY
+  , rotationZ
+  , shearing
   )
 where
 
@@ -190,6 +197,49 @@ inverse m
   | otherwise =
     let d = determinant m
     in Just $ matrix (rows m) (cols m) (\(i, j) -> cofactor m j i / d)
+
+translation :: Num a => a -> a -> a -> Matrix a
+translation x y z = fromLists [ [1, 0, 0, x]
+                              , [0, 1, 0, y]
+                              , [0, 0, 1, z]
+                              , [0, 0, 0, 1]
+                              ]
+
+scaling :: Num a => a -> a -> a -> Matrix a
+scaling x y z = fromLists [ [x, 0, 0, 0]
+                          , [0, y, 0, 0]
+                          , [0, 0, z, 0]
+                          , [0, 0, 0, 1]
+                          ]
+
+rotationX :: Floating a => a -> Matrix a
+rotationX r = fromLists [ [1, 0, 0, 0]
+                        , [0, cos r, -sin r, 0]
+                        , [0, sin r, cos r, 0]
+                        , [0, 0, 0, 1]
+                        ]
+
+rotationY :: Floating a => a -> Matrix a
+rotationY r = fromLists [ [cos r, 0, sin r, 0]
+                        , [0, 1, 0, 0]
+                        , [-sin r, 0, cos r, 0]
+                        , [0, 0, 0, 1]
+                        ]
+
+rotationZ :: Floating a => a -> Matrix a
+rotationZ r = fromLists [ [cos r, -sin r, 0, 0]
+                        , [sin r, cos r, 0, 0]
+                        , [0, 0, 1, 0]
+                        , [0, 0, 0, 1]
+                        ]
+
+shearing :: Num a => a -> a -> a -> a -> a -> a -> Matrix a
+shearing xy xz yx yz zx zy =
+  fromLists [ [1, xy, xz, 0]
+            , [yx, 1, yz, 0]
+            , [zx, zy, 1, 0]
+            , [0, 0, 0, 1]
+            ]
 
 instance Arbitrary a => Arbitrary (Matrix a) where
   arbitrary = do
