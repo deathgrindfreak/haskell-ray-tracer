@@ -1,5 +1,4 @@
 {-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE LambdaCase #-}
 
 module RayTracer.Matrix
   ( Matrix(..)
@@ -30,12 +29,14 @@ module RayTracer.Matrix
   , rotationY
   , rotationZ
   , shearing
+  , (|>)
   )
 where
 
 import RayTracer.Tuple
 
 import Test.QuickCheck (Arbitrary, arbitrary)
+import qualified Test.QuickCheck as Q
 import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
 
 import qualified Data.Vector as V
@@ -241,10 +242,13 @@ shearing xy xz yx yz zx zy =
             , [0, 0, 0, 1]
             ]
 
+(|>) :: Num a => Matrix a -> Matrix a -> Matrix a
+(|>) = flip (*)
+
 instance Arbitrary a => Arbitrary (Matrix a) where
   arbitrary = do
-    rows <- arbitrary
-    cols <- arbitrary
+    rows <- Q.elements [2..10]
+    cols <- Q.elements [2..10]
     elements <- V.fromList <$> mapM (const arbitrary) [0..rows * cols]
     return $ M { rows, cols, elements }
 

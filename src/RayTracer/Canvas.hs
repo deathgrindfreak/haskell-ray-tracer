@@ -29,22 +29,25 @@ data Canvas = Canvas
 makeCanvas :: (Int, Int) -> Canvas
 makeCanvas (w, h) = Canvas w h (V.replicate (w * h) 0)
 
-toIndex :: (Int, Int) -> Canvas -> Int
-toIndex (x, y) Canvas { width } = x + width * y
+toIndex :: Canvas -> (Int, Int) -> Int
+toIndex Canvas { width } (x, y) = x + width * y
 
 pixelAt :: (Int, Int) -> Canvas -> Color Double
-pixelAt (x, y) c@Canvas { pixels } = pixels V.! toIndex (x, y) c
+pixelAt (x, y) c@Canvas { pixels } = pixels V.! toIndex c (x, y)
 
 writePixel :: (Int, Int)
            -> Color Double
            -> Canvas
            -> Canvas
 writePixel coord color c =
-  c { pixels = pixels c V.// [(toIndex coord c, color)] }
+  c { pixels = pixels c V.// [(toIndex c coord, color)] }
 
 writePixels :: [((Int, Int), Color Double)] -> Canvas -> Canvas
 writePixels coords c =
-  c { pixels = pixels c V.// map (first (`toIndex` c)) coords }
+  c { pixels = pixels c V.// map (first (toIndex c)) (filter (inBounds c . fst) coords) }
+
+inBounds :: Canvas -> (Int, Int) -> Bool
+inBounds c@Canvas { pixels } coord = toIndex c coord < length pixels
 
 canvasToPPM :: Canvas -> T.Text
 canvasToPPM Canvas {width, height, pixels} =

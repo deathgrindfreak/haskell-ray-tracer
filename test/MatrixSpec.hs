@@ -316,6 +316,20 @@ spec = describe "Matrix" $ do
     shearing 0 0 0 0 1 0 |*> p `shouldBe` Point 2 3 6
     shearing 0 0 0 0 0 1 |*> p `shouldBe` Point 2 3 7
 
+  it "Chaining" $ do
+    let p = Point 1 0 1
+        a = rotationX (pi / 2)
+        b = scaling 5 5 5
+        c = translation 10 5 7
+        p2 = a |*> p
+        p3 = b |*> p2
+        p4 = c |*> p3
+    p2 `shouldApproximate` Point 1 (-1) 0
+    p3 `shouldApproximate` Point 5 (-5) 0
+    p4 `shouldApproximate` Point 15 0 7
+    (c * b * a) |*> p `shouldBe` Point 15 0 7
+    a |> b |> c |*> p `shouldBe` Point 15 0 7
+
   it "Functor" $ do
     let matrixTrigger :: Matrix (Double, Double, Double)
         matrixTrigger = undefined

@@ -25,6 +25,7 @@ library
       RayTracer.Tuple
       RayTracer.Matrix
       Example.Projectile
+      Example.Clock
   other-modules:
       Paths_ray_tracer_challenge
   hs-source-dirs:
@@ -62,12 +63,8 @@ test-suite ray-tracer-challenge-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      CanvasSpec
-      ColorSpec
-      MatrixSpec
       SpecHelper
-      TupleSpec
-      Paths_ray_tracer_challenge
+      Approximate
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
