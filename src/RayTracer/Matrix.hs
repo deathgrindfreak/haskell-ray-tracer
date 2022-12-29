@@ -28,10 +28,12 @@ where
 
 import RayTracer.Tuple
 
+import Test.QuickCheck (Arbitrary, arbitrary)
+import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
+
 import qualified Data.Vector as V
 import Data.List (intercalate)
 import Data.Bifunctor (Bifunctor(first))
-import Data.Maybe (fromJust)
 
 data Matrix a = M
   { rows :: Int
@@ -188,3 +190,13 @@ inverse m
   | otherwise =
     let d = determinant m
     in Just $ matrix (rows m) (cols m) (\(i, j) -> cofactor m j i / d)
+
+instance Arbitrary a => Arbitrary (Matrix a) where
+  arbitrary = do
+    rows <- arbitrary
+    cols <- arbitrary
+    elements <- V.fromList <$> mapM (const arbitrary) [0..rows * cols]
+    return $ M { rows, cols, elements }
+
+instance Eq a => EqProp (Matrix a) where
+  (=-=) = eq

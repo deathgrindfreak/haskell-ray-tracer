@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -fno-warn-type-defaults #-}
+
 module TupleSpec (spec) where
 
 import SpecHelper

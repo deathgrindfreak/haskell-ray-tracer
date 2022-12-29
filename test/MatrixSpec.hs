@@ -1,6 +1,6 @@
 module MatrixSpec (spec) where
 
-import Test.QuickCheck hiding (elements, inverse)
+import Test.QuickCheck hiding (elements)
 import Test.QuickCheck.Checkers hiding (inverse)
 import Test.QuickCheck.Classes
 import Test.Hspec.QuickCheck
@@ -10,16 +10,6 @@ import Data.Functor ((<&>))
 import SpecHelper
 import RayTracer.Matrix
 import RayTracer.Tuple
-
-instance Arbitrary a => Arbitrary (Matrix a) where
-  arbitrary = do
-    rows <- arbitrary
-    cols <- arbitrary
-    elements <- V.fromList <$> mapM (const arbitrary) [0..rows * cols]
-    return $ M { rows, cols, elements }
-
-instance Eq a => EqProp (Matrix a) where
-  (=-=) = eq
 
 newtype Square = Square { toMatrix :: Matrix Double }
   deriving (Show)

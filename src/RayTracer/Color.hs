@@ -2,6 +2,8 @@ module RayTracer.Color
   ( Color(..)
   ) where
 
+import Control.Applicative (Applicative(liftA2))
+
 data Color a = Color
   { red :: a
   , green :: a
@@ -17,9 +19,12 @@ instance Applicative Color where
   (Color f g h) <*> (Color a b c) = Color (f a) (g b) (h c)
 
 instance (Num a) =>  Num (Color a) where
+  {-# SPECIALIZE instance Num (Color Float) #-}
+  {-# SPECIALIZE instance Num (Color Double) #-}
+
   negate = fmap negate
-  a + b = (+) <$> a <*> b
-  a * b = (*) <$> a <*> b
+  (+) = liftA2 (+)
+  (*) = liftA2 (*)
   fromInteger i = Color i' i' i' where i' = fromInteger i
   abs = fmap abs
   signum = fmap signum
