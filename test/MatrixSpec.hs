@@ -10,9 +10,11 @@ import qualified Data.Vector as V
 import Data.Functor ((<&>))
 
 import SpecHelper
+import Approximate (shouldApproximate)
 import RayTracer.Matrix
 import RayTracer.Tuple
 import Data.Maybe (fromJust)
+import Control.Applicative (Applicative(liftA2))
 
 newtype Square = Square { toMatrix :: Matrix Double }
   deriving (Show)
@@ -287,23 +289,23 @@ spec = describe "Matrix" $ do
         halfQuarter = rotationX (pi / 4)
         invHalfQuarter = fromJust (inverse halfQuarter)
         fullQuarter = rotationX (pi / 2)
-    halfQuarter |*> p `shouldBe` Point 0 (sqrt 2 / 2) (sqrt 2 / 2)
-    fullQuarter |*> p `shouldBe` Point 0 0 1
-    invHalfQuarter |*> p `shouldBe` Point 0 (sqrt 2 / 2) (-sqrt 2 / 2)
+    halfQuarter |*> p `shouldApproximate` Point 0 (sqrt 2 / 2) (sqrt 2 / 2)
+    fullQuarter |*> p `shouldApproximate` Point 0 0 1
+    invHalfQuarter |*> p `shouldApproximate` Point 0 (sqrt 2 / 2) (-sqrt 2 / 2)
 
   it "Rotation Y" $ do
     let p = Point 0 0 1
         halfQuarter = rotationY (pi / 4)
         fullQuarter = rotationY (pi / 2)
-    halfQuarter |*> p `shouldBe` Point (sqrt 2 / 2) 0 (sqrt 2 / 2)
-    fullQuarter |*> p `shouldBe` Point 1 0 0
+    halfQuarter |*> p `shouldApproximate` Point (sqrt 2 / 2) 0 (sqrt 2 / 2)
+    fullQuarter |*> p `shouldApproximate` Point 1 0 0
 
   it "Rotation Z" $ do
     let p = Point 0 1 0
         halfQuarter = rotationZ (pi / 4)
         fullQuarter = rotationZ (pi / 2)
-    halfQuarter |*> p `shouldBe` Point (-sqrt 2 / 2) (sqrt 2 / 2) 0
-    fullQuarter |*> p `shouldBe` Point (-1) 0 0
+    halfQuarter |*> p `shouldApproximate` Point (-sqrt 2 / 2) (sqrt 2 / 2) 0
+    fullQuarter |*> p `shouldApproximate` Point (-1) 0 0
 
   it "Shearing" $ do
     let p = Point 2 3 4
