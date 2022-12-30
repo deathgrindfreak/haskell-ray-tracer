@@ -132,8 +132,9 @@ spec = describe "Matrix" $ do
                                , [46, 56, 66, 76, 90]
                                ]
 
-    g |*| Point 1 2 3 `shouldBe` Point 18 24 33
-    Point 1 2 3 |*| transpose g `shouldBe` Point 18 24 33
+  prop "Transformation on point is commutative" $
+    \(g :: TransformMatrix Double, p :: Point Double) -> do
+      p |*| g `shouldBe` g |*| p
 
   it "Identity" $ do
     let a :: Matrix Int
@@ -269,6 +270,10 @@ spec = describe "Matrix" $ do
     inv |*| p `shouldBe` Point (-8) 7 3
     transform |*| v `shouldBe` v
 
+  prop "Translation via matrix should move point" $
+    \(x :: Double, y :: Double, z :: Double, Point a b c :: Point Double) ->
+      translation x y z |*| Point a b c `shouldBe` Point (a + x) (b + y) (c + z)
+
   it "Scaling" $ do
     let transform = scaling 2 3 4
         inv = fromJust (inverse transform)
@@ -278,6 +283,10 @@ spec = describe "Matrix" $ do
     transform |*| v `shouldBe` Vec (-8) 18 32
     inv |*| v `shouldBe` Vec (-2) 2 2
 
+  prop "Scaling via matrix should multiply point" $
+    \(x :: Double, y :: Double, z :: Double, Point a b c :: Point Double) ->
+      scaling x y z |*| Point a b c `shouldBe` Point (a * x) (b * y) (c * z)
+
   it "Reflection" $ do
     let transform = scaling (-1) 1 1
         p = Point 2 3 4
@@ -286,7 +295,7 @@ spec = describe "Matrix" $ do
   it "Rotation X" $ do
     let p :: Point Double
         p = Point 0 1 0
-        halfQuarter :: Matrix Double
+        halfQuarter :: TransformMatrix Double
         halfQuarter = rotationX (pi / 4)
         invHalfQuarter = fromJust (inverse halfQuarter)
         fullQuarter = rotationX (pi / 2)
@@ -318,7 +327,8 @@ spec = describe "Matrix" $ do
     shearing 0 0 0 0 0 1 |*| p `shouldBe` Point 2 3 7
 
   it "Chaining" $ do
-    let p = Point 1 0 1
+    let p :: Point Double
+        p = Point 1 0 1
         a = rotationX (pi / 2)
         b = scaling 5 5 5
         c = translation 10 5 7
@@ -328,7 +338,7 @@ spec = describe "Matrix" $ do
     p2 `shouldApproximate` Point 1 (-1) 0
     p3 `shouldApproximate` Point 5 (-5) 0
     p4 `shouldApproximate` Point 15 0 7
-    (c * b * a) |*| p `shouldBe` Point 15 0 7
+    (c |*| b |*| a) |*| p `shouldBe` Point 15 0 7
     a |> b |> c |*| p `shouldBe` Point 15 0 7
 
   it "Functor" $ do

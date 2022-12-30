@@ -2,14 +2,22 @@ module RayTracer.Color
   ( Color(..)
   ) where
 
+import Test.QuickCheck (Arbitrary, arbitrary)
+import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
 import Control.Applicative (Applicative(liftA2))
 
 data Color a = Color
-  { red :: a
-  , green :: a
-  , blue :: a
+  { red :: !a
+  , green :: !a
+  , blue :: !a
   }
   deriving (Show, Eq)
+
+instance Arbitrary a => Arbitrary (Color a) where
+  arbitrary = Color <$> arbitrary <*> arbitrary <*> arbitrary
+
+instance Eq a => EqProp (Color a) where
+  (=-=) = eq
 
 instance Functor Color where
   fmap f (Color a b c) = Color (f a) (f b) (f c)

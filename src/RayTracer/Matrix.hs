@@ -1,8 +1,10 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE LambdaCase #-}
 
 module RayTracer.Matrix
   ( Matrix(..)
+  , TransformMatrix
   , (!)
   , update
   , dims
@@ -13,10 +15,6 @@ module RayTracer.Matrix
   , fromLists
   , toLists
   , elementwise
-  , fromVecCol
-  , fromVecRow
-  , fromPointCol
-  , fromPointRow
   , transpose
   , identity
   , submatrix
@@ -37,7 +35,7 @@ where
 
 import RayTracer.Tuple
 
-import Test.QuickCheck (Arbitrary, arbitrary)
+import Test.QuickCheck hiding (elements)
 import qualified Test.QuickCheck as Q
 import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
 
@@ -46,8 +44,8 @@ import Data.List (intercalate)
 import Data.Bifunctor (Bifunctor(first))
 
 data Matrix a = M
-  { rows :: Int
-  , cols :: Int
+  { rows :: !Int
+  , cols :: !Int
   , elements :: V.Vector a
   }
 
@@ -79,10 +77,11 @@ instance Functor Matrix where
 
 matrix :: Int -> Int -> ((Int, Int) -> a) -> Matrix a
 matrix rows cols f =
-  M { rows
-    , cols
-    , elements = V.fromList [f (r, c) | r <- [0..rows - 1], c <- [0..cols - 1]]
-    }
+  M rows cols . V.fromList $ [f (r, c) | r <- [0..rows - 1], c <- [0..cols - 1]]
+
+matrixM :: (Monad m) => Int -> Int -> ((Int, Int) -> m a) -> m (Matrix a)
+matrixM rows cols f =
+  M rows cols . V.fromList <$> sequence [f (r, c) | r <- [0..rows - 1], c <- [0..cols - 1]]
 
 elementwise :: (a -> b -> c) -> Matrix a -> Matrix b -> Matrix c
 elementwise f (M ar ac ea) (M br bc eb) =
@@ -134,42 +133,6 @@ fromLists :: [[a]] -> Matrix a
 fromLists [] = error "Empty list"
 fromLists l@(xs:_) = fromList (length l) (length xs) (concat l)
 
-fromVecRow :: Num a => Vec a -> Matrix a
-fromVecRow (Vec a b c) = fromList 1 4 [a, b, c, 0]
-
-fromPointRow :: Num a => Point a -> Matrix a
-fromPointRow (Point a b c) = fromList 1 4 [a, b, c, 1]
-
-fromVecCol :: Num a => Vec a -> Matrix a
-fromVecCol (Vec a b c) = fromList 4 1 [a, b, c, 0]
-
-fromPointCol :: Num a => Point a -> Matrix a
-fromPointCol (Point a b c) = fromList 4 1 [a, b, c, 1]
-
-toVecCol :: Matrix a -> Vec a
-toVecCol m' = Vec (m' ! (0, 0)) (m' ! (1, 0)) (m' ! (2, 0))
-
-toPointCol :: Matrix a -> Point a
-toPointCol m' = Point (m' ! (0, 0)) (m' ! (1, 0)) (m' ! (2, 0))
-
-toVecRow :: Matrix a -> Vec a
-toVecRow m' = Vec (m' ! (0, 0)) (m' ! (0, 1)) (m' ! (0, 2))
-
-toPointRow :: Matrix a -> Point a
-toPointRow m' = Point (m' ! (0, 0)) (m' ! (0, 1)) (m' ! (0, 2))
-
-instance VecMult Matrix Vec Vec where
-  m |*| t = toVecCol (m * fromVecCol t)
-
-instance VecMult Vec Matrix Vec where
-  t |*| m = toVecRow (fromVecRow t * m)
-
-instance VecMult Matrix Point Point where
-  m |*| t = toPointCol (m * fromPointCol t)
-
-instance VecMult Point Matrix Point where
-  t |*| m = toPointRow (fromPointRow t * m)
-
 identity :: Num a => Int -> Matrix a
 identity n = matrix n n (\(i, j) -> if i == j then 1 else 0)
 
@@ -195,68 +158,134 @@ determinant m@M { rows, cols }
   | rows == 2 = (m ! (0, 0)) * (m ! (1, 1)) - (m ! (1, 0)) * (m ! (0, 1))
   | otherwise = sum [(m ! (0, c)) * cofactor m 0 c | c <- [0..cols - 1]]
 
-isInvertable :: (Num a, Eq a) => Matrix a -> Bool
-isInvertable m = determinant m /= 0
+class Invertable m where
+  isInvertable :: (Num a, Eq a) => m a -> Bool
+  inverse :: (Fractional a, Eq a) => m a -> Maybe (m a)
 
-inverse :: (Fractional a, Eq a) => Matrix a -> Maybe (Matrix a)
-inverse m
-  | not $ isInvertable m = Nothing
-  | otherwise =
-    let d = determinant m
-    in Just $ matrix (rows m) (cols m) (\(i, j) -> cofactor m j i / d)
+instance Invertable Matrix where
+  isInvertable m = determinant m /= 0
+  inverse m
+    | not $ isInvertable m = Nothing
+    | otherwise =
+        Just $ matrix (rows m) (cols m) (\(i, j) -> cofactor m j i / determinant m)
 
-translation :: Num a => a -> a -> a -> Matrix a
-translation x y z = fromLists [ [1, 0, 0, x]
-                              , [0, 1, 0, y]
-                              , [0, 0, 1, z]
-                              , [0, 0, 0, 1]
-                              ]
+instance Invertable TransformMatrix where
+  isInvertable _ = True
+  inverse (TransformMatrix m) = TransformMatrix <$> inverse m
 
-scaling :: Num a => a -> a -> a -> Matrix a
-scaling x y z = fromLists [ [x, 0, 0, 0]
-                          , [0, y, 0, 0]
-                          , [0, 0, z, 0]
-                          , [0, 0, 0, 1]
-                          ]
+newtype TransformMatrix a = TransformMatrix (Matrix a)
 
-rotationX :: Floating a => a -> Matrix a
-rotationX r = fromLists [ [1, 0, 0, 0]
-                        , [0, cos r, -sin r, 0]
-                        , [0, sin r, cos r, 0]
-                        , [0, 0, 0, 1]
-                        ]
+instance (Num a, Ord a, Show a) => Show (TransformMatrix a) where
+  show (TransformMatrix m) = prettyPrintMatrix m
 
-rotationY :: Floating a => a -> Matrix a
-rotationY r = fromLists [ [cos r, 0, sin r, 0]
-                        , [0, 1, 0, 0]
-                        , [-sin r, 0, cos r, 0]
-                        , [0, 0, 0, 1]
-                        ]
+instance Eq a => Eq (TransformMatrix a) where
+  TransformMatrix m == TransformMatrix m' = m == m'
 
-rotationZ :: Floating a => a -> Matrix a
-rotationZ r = fromLists [ [cos r, -sin r, 0, 0]
-                        , [sin r, cos r, 0, 0]
-                        , [0, 0, 1, 0]
-                        , [0, 0, 0, 1]
-                        ]
+fromVecCol :: Num a => Vec a -> Matrix a
+fromVecCol (Vec a b c) = fromList 4 1 [a, b, c, 0]
 
-shearing :: Num a => a -> a -> a -> a -> a -> a -> Matrix a
-shearing xy xz yx yz zx zy =
+fromPointCol :: Num a => Point a -> Matrix a
+fromPointCol (Point a b c) = fromList 4 1 [a, b, c, 1]
+
+fromVecRow :: Num a => Vec a -> Matrix a
+fromVecRow (Vec a b c) = fromList 1 4 [a, b, c, 0]
+
+fromPointRow :: Num a => Point a -> Matrix a
+fromPointRow (Point a b c) = fromList 1 4 [a, b, c, 1]
+
+toVecCol :: Matrix a -> Vec a
+toVecCol m = Vec (m ! (0, 0)) (m ! (1, 0)) (m ! (2, 0))
+
+toPointCol :: Matrix a -> Point a
+toPointCol m = Point (m ! (0, 0)) (m ! (1, 0)) (m ! (2, 0))
+
+toVecRow :: Matrix a -> Vec a
+toVecRow m' = Vec (m' ! (0, 0)) (m' ! (0, 1)) (m' ! (0, 2))
+
+toPointRow :: Matrix a -> Point a
+toPointRow m' = Point (m' ! (0, 0)) (m' ! (0, 1)) (m' ! (0, 2))
+
+instance VecMult TransformMatrix Vec Vec where
+  TransformMatrix m |*| t = toVecCol (m * fromVecCol t)
+
+instance VecMult Vec TransformMatrix Vec where
+  t |*| TransformMatrix m = toVecRow (fromVecRow t * transpose m)
+
+instance VecMult TransformMatrix Point Point where
+  TransformMatrix m |*| t = toPointCol (m * fromPointCol t)
+
+instance VecMult Point TransformMatrix Point where
+  t |*| TransformMatrix m = toPointRow (fromPointRow t * transpose m)
+
+instance VecMult TransformMatrix TransformMatrix TransformMatrix where
+  TransformMatrix a |*| TransformMatrix b = TransformMatrix (a * b)
+
+translation :: Num a => a -> a -> a -> TransformMatrix a
+translation x y z = TransformMatrix $
+  fromLists [ [1, 0, 0, x]
+            , [0, 1, 0, y]
+            , [0, 0, 1, z]
+            , [0, 0, 0, 1]
+            ]
+
+scaling :: Num a => a -> a -> a -> TransformMatrix a
+scaling x y z = TransformMatrix $
+  fromLists [ [x, 0, 0, 0]
+            , [0, y, 0, 0]
+            , [0, 0, z, 0]
+            , [0, 0, 0, 1]
+            ]
+
+rotationX :: Floating a => a -> TransformMatrix a
+rotationX r = TransformMatrix $
+  fromLists [ [1, 0, 0, 0]
+            , [0, cos r, -sin r, 0]
+            , [0, sin r, cos r, 0]
+            , [0, 0, 0, 1]
+            ]
+
+rotationY :: Floating a => a -> TransformMatrix a
+rotationY r = TransformMatrix $
+  fromLists [ [cos r, 0, sin r, 0]
+            , [0, 1, 0, 0]
+            , [-sin r, 0, cos r, 0]
+            , [0, 0, 0, 1]
+            ]
+
+rotationZ :: Floating a => a -> TransformMatrix a
+rotationZ r = TransformMatrix $
+  fromLists [ [cos r, -sin r, 0, 0]
+            , [sin r, cos r, 0, 0]
+            , [0, 0, 1, 0]
+            , [0, 0, 0, 1]
+            ]
+
+shearing :: Num a => a -> a -> a -> a -> a -> a -> TransformMatrix a
+shearing xy xz yx yz zx zy = TransformMatrix $
   fromLists [ [1, xy, xz, 0]
             , [yx, 1, yz, 0]
             , [zx, zy, 1, 0]
             , [0, 0, 0, 1]
             ]
 
-(|>) :: Num a => Matrix a -> Matrix a -> Matrix a
-(|>) = flip (*)
+(|>) :: Num a => TransformMatrix a -> TransformMatrix a -> TransformMatrix a
+TransformMatrix a |> TransformMatrix b = TransformMatrix (b * a)
 
 instance Arbitrary a => Arbitrary (Matrix a) where
   arbitrary = do
     rows <- Q.elements [2..10]
     cols <- Q.elements [2..10]
-    elements <- V.fromList <$> mapM (const arbitrary) [0..rows * cols]
-    return $ M { rows, cols, elements }
+    matrixM rows cols (const arbitrary)
 
 instance Eq a => EqProp (Matrix a) where
+  (=-=) = eq
+
+instance (Arbitrary a, Num a) => Arbitrary (TransformMatrix a) where
+  arbitrary = TransformMatrix <$>
+    matrixM 4 4 (\case
+                    (3, 3) -> return 1
+                    (3, _) -> return 0
+                    _ -> arbitrary)
+
+instance Eq a => EqProp (TransformMatrix a) where
   (=-=) = eq

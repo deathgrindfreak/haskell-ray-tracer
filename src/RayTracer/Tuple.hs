@@ -14,12 +14,16 @@ module RayTracer.Tuple
   , norm
   ) where
 
+import Test.QuickCheck
+import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
+import Test.QuickCheck (Arbitrary(arbitrary))
+
 infixl 7 |*|
 infixl 6 |-|
 infixl 6 |+|
 
-data Vec a = Vec a a a deriving (Show, Eq, Functor)
-data Point a = Point a a a deriving (Show, Eq, Functor)
+data Vec a = Vec !a !a !a deriving (Show, Eq, Functor)
+data Point a = Point !a !a !a deriving (Show, Eq, Functor)
 newtype Scalar a = Scalar a deriving (Show, Eq)
 
 instance Applicative Vec where
@@ -85,3 +89,21 @@ magnitude (Vec x y z) = sqrt (x * x + y * y + z * z)
 {-# SPECIALIZE norm :: Vec Double -> Vec Double #-}
 norm :: (RealFloat a) => Vec a -> Vec a
 norm v@(Vec x y z) = Vec (x/r) (y/r) (z/r) where r = magnitude v
+
+instance Arbitrary a => Arbitrary (Point a) where
+  arbitrary = Point <$> arbitrary <*> arbitrary <*> arbitrary
+
+instance Eq a => EqProp (Point a) where
+  (=-=) = eq
+
+instance Arbitrary a => Arbitrary (Vec a) where
+  arbitrary = Vec <$> arbitrary <*> arbitrary <*> arbitrary
+
+instance Eq a => EqProp (Vec a) where
+  (=-=) = eq
+
+instance Arbitrary a => Arbitrary (Scalar a) where
+  arbitrary = Scalar <$> arbitrary
+
+instance Eq a => EqProp (Scalar a) where
+  (=-=) = eq

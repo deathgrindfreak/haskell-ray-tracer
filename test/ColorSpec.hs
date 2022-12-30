@@ -3,15 +3,8 @@ module ColorSpec (spec) where
 import SpecHelper
 import RayTracer.Color
 
-import Test.QuickCheck
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
-
-instance Arbitrary a => Arbitrary (Color a) where
-  arbitrary = Color <$> arbitrary <*> arbitrary <*> arbitrary
-
-instance Eq a => EqProp (Color a) where
-  (=-=) = eq
 
 spec :: Spec
 spec = describe "Color" $ do

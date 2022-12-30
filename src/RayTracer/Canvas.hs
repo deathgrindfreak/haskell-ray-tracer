@@ -20,8 +20,8 @@ import qualified Data.Text.Lazy.Builder as B
 import qualified Data.Text.Lazy.Builder.Int as B
 
 data Canvas = Canvas
-  { width :: Int
-  , height :: Int
+  { width :: !Int
+  , height :: !Int
   , pixels :: V.Vector (Color Double)
   }
   deriving (Show)

@@ -20,6 +20,7 @@ dependencies:
   - text
   - QuickCheck
   - checkers
+  - unordered-containers
 
 ghc-options:
 - -Wall
