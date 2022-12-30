@@ -1,10 +1,14 @@
 module Approximate (ApproxEq, Identity(..), shouldApproximate) where
 
 import RayTracer.Tuple
+import RayTracer.Matrix
 
 import Test.Hspec
+import qualified Data.Vector as V
 
-shouldApproximate :: (HasCallStack, Show a, Eq a, Ord a, Floating a, ApproxEq f)
+infix 1 `shouldApproximate`
+
+shouldApproximate :: (HasCallStack, Ord a, Floating a, ApproxEq f)
                   => f a -> f a -> Expectation
 shouldApproximate a b = (a `approxEq` b) `shouldBe` True
 
@@ -21,9 +25,17 @@ newtype Identity a = Identity { runIdentity :: a }
 instance ApproxEq Identity where
   approxEq (Identity a) (Identity b) = abs (a - b) < epsilon
 
-instance ApproxEq Tuple where
-  approxEq (Point a b c) (Point d e f) =
-    and $ zipWith (\x y -> approxEq (Identity x) (Identity y)) [a, b, c] [d, e, f]
+instance ApproxEq Matrix where
+  approxEq M { elements = a } M { elements = b } =
+    V.and $ V.zipWith (\x y -> approxEq (Identity x) (Identity y)) a b
+
+instance ApproxEq Vec where
   approxEq (Vec a b c) (Vec d e f) =
     and $ zipWith (\x y -> approxEq (Identity x) (Identity y)) [a, b, c] [d, e, f]
+
+instance ApproxEq Point where
+  approxEq (Point a b c) (Point d e f) =
+    and $ zipWith (\x y -> approxEq (Identity x) (Identity y)) [a, b, c] [d, e, f]
+
+instance ApproxEq Scalar where
   approxEq (Scalar a) (Scalar b) = approxEq (Identity a) (Identity b)

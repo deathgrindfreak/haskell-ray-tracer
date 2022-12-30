@@ -1,9 +1,11 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module RayTracer.Matrix
   ( Matrix(..)
   , (!)
   , update
+  , dims
   , (//)
   , elemAt
   , matrix
@@ -11,10 +13,10 @@ module RayTracer.Matrix
   , fromLists
   , toLists
   , elementwise
-  , fromTupleRow
-  , fromTupleCol
-  , (|*>)
-  , (<*|)
+  , fromVecCol
+  , fromVecRow
+  , fromPointCol
+  , fromPointRow
   , transpose
   , identity
   , submatrix
@@ -132,37 +134,41 @@ fromLists :: [[a]] -> Matrix a
 fromLists [] = error "Empty list"
 fromLists l@(xs:_) = fromList (length l) (length xs) (concat l)
 
-fromTupleRow :: Num a => Tuple a -> Matrix a
-fromTupleRow (Vec a b c) = fromList 1 4 [a, b, c, 0]
-fromTupleRow (Point a b c) = fromList 1 4 [a, b, c, 1]
-fromTupleRow (Scalar _) = error "Cannot convert Scalar to Matrix"
+fromVecRow :: Num a => Vec a -> Matrix a
+fromVecRow (Vec a b c) = fromList 1 4 [a, b, c, 0]
 
-fromTupleCol :: Num a => Tuple a -> Matrix a
-fromTupleCol (Vec a b c) = fromList 4 1 [a, b, c, 0]
-fromTupleCol (Point a b c) = fromList 4 1 [a, b, c, 1]
-fromTupleCol (Scalar _) = error "Cannot convert Scalar to Matrix"
+fromPointRow :: Num a => Point a -> Matrix a
+fromPointRow (Point a b c) = fromList 1 4 [a, b, c, 1]
 
-(|*>) :: (Num a, Eq a) => Matrix a -> Tuple a -> Tuple a
-m |*> t =
-  if dims m /= (4, 4)
-  then error "Dimensions of the matrix must be 4x4"
-  else
-    let m' = m * fromTupleCol t
-     in case m' ! (3, 0) of
-      0 -> Vec (m' ! (0, 0)) (m' ! (1, 0)) (m' ! (2, 0))
-      1 -> Point (m' ! (0, 0)) (m' ! (1, 0)) (m' ! (2, 0))
-      _ -> error "Improper multiplication result"
+fromVecCol :: Num a => Vec a -> Matrix a
+fromVecCol (Vec a b c) = fromList 4 1 [a, b, c, 0]
 
-(<*|) :: (Num a, Eq a) => Tuple a -> Matrix a -> Tuple a
-t <*| m =
-  if dims m /= (4, 4)
-  then error "Dimensions of the matrix must be 4x4"
-  else
-    let m' = fromTupleRow t * m
-     in case m' ! (0, 3) of
-      0 -> Vec (m' ! (0, 0)) (m' ! (0, 1)) (m' ! (0, 2))
-      1 -> Point (m' ! (0, 0)) (m' ! (0, 1)) (m' ! (0, 2))
-      _ -> error "Improper multiplication result"
+fromPointCol :: Num a => Point a -> Matrix a
+fromPointCol (Point a b c) = fromList 4 1 [a, b, c, 1]
+
+toVecCol :: Matrix a -> Vec a
+toVecCol m' = Vec (m' ! (0, 0)) (m' ! (1, 0)) (m' ! (2, 0))
+
+toPointCol :: Matrix a -> Point a
+toPointCol m' = Point (m' ! (0, 0)) (m' ! (1, 0)) (m' ! (2, 0))
+
+toVecRow :: Matrix a -> Vec a
+toVecRow m' = Vec (m' ! (0, 0)) (m' ! (0, 1)) (m' ! (0, 2))
+
+toPointRow :: Matrix a -> Point a
+toPointRow m' = Point (m' ! (0, 0)) (m' ! (0, 1)) (m' ! (0, 2))
+
+instance VecMult Matrix Vec Vec where
+  m |*| t = toVecCol (m * fromVecCol t)
+
+instance VecMult Vec Matrix Vec where
+  t |*| m = toVecRow (fromVecRow t * m)
+
+instance VecMult Matrix Point Point where
+  m |*| t = toPointCol (m * fromPointCol t)
+
+instance VecMult Point Matrix Point where
+  t |*| m = toPointRow (fromPointRow t * m)
 
 identity :: Num a => Int -> Matrix a
 identity n = matrix n n (\(i, j) -> if i == j then 1 else 0)

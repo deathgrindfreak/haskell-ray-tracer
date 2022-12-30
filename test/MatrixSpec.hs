@@ -14,7 +14,6 @@ import Approximate (shouldApproximate)
 import RayTracer.Matrix
 import RayTracer.Tuple
 import Data.Maybe (fromJust)
-import Control.Applicative (Applicative(liftA2))
 
 newtype Square = Square { toMatrix :: Matrix Double }
   deriving (Show)
@@ -133,8 +132,8 @@ spec = describe "Matrix" $ do
                                , [46, 56, 66, 76, 90]
                                ]
 
-    g |*> Point 1 2 3 `shouldBe` Point 18 24 33
-    Point 1 2 3 <*| transpose g `shouldBe` Point 18 24 33
+    g |*| Point 1 2 3 `shouldBe` Point 18 24 33
+    Point 1 2 3 |*| transpose g `shouldBe` Point 18 24 33
 
   it "Identity" $ do
     let a :: Matrix Int
@@ -266,69 +265,71 @@ spec = describe "Matrix" $ do
         inv = fromJust (inverse transform)
         p = Point (-3) 4 5
         v = Vec (-3) 4 5
-    transform |*> p `shouldBe` Point 2 1 7
-    inv |*> p `shouldBe` Point (-8) 7 3
-    transform |*> v `shouldBe` v
+    transform |*| p `shouldBe` Point 2 1 7
+    inv |*| p `shouldBe` Point (-8) 7 3
+    transform |*| v `shouldBe` v
 
   it "Scaling" $ do
     let transform = scaling 2 3 4
         inv = fromJust (inverse transform)
         p = Point (-4) 6 8
         v = Vec (-4) 6 8
-    transform |*> p `shouldBe` Point (-8) 18 32
-    transform |*> v `shouldBe` Vec (-8) 18 32
-    inv |*> v `shouldBe` Vec (-2) 2 2
+    transform |*| p `shouldBe` Point (-8) 18 32
+    transform |*| v `shouldBe` Vec (-8) 18 32
+    inv |*| v `shouldBe` Vec (-2) 2 2
 
   it "Reflection" $ do
     let transform = scaling (-1) 1 1
         p = Point 2 3 4
-    transform |*> p `shouldBe` Point (-2) 3 4
+    transform |*| p `shouldBe` Point (-2) 3 4
 
   it "Rotation X" $ do
-    let p = Point 0 1 0
+    let p :: Point Double
+        p = Point 0 1 0
+        halfQuarter :: Matrix Double
         halfQuarter = rotationX (pi / 4)
         invHalfQuarter = fromJust (inverse halfQuarter)
         fullQuarter = rotationX (pi / 2)
-    halfQuarter |*> p `shouldApproximate` Point 0 (sqrt 2 / 2) (sqrt 2 / 2)
-    fullQuarter |*> p `shouldApproximate` Point 0 0 1
-    invHalfQuarter |*> p `shouldApproximate` Point 0 (sqrt 2 / 2) (-sqrt 2 / 2)
+    halfQuarter |*| p `shouldApproximate` Point 0 (sqrt 2 / 2) (sqrt 2 / 2)
+    fullQuarter |*| p `shouldApproximate` Point 0 0 1
+    invHalfQuarter |*| p `shouldApproximate` Point 0 (sqrt 2 / 2) (-sqrt 2 / 2)
 
   it "Rotation Y" $ do
     let p = Point 0 0 1
         halfQuarter = rotationY (pi / 4)
         fullQuarter = rotationY (pi / 2)
-    halfQuarter |*> p `shouldApproximate` Point (sqrt 2 / 2) 0 (sqrt 2 / 2)
-    fullQuarter |*> p `shouldApproximate` Point 1 0 0
+    halfQuarter |*| p `shouldApproximate` Point (sqrt 2 / 2) 0 (sqrt 2 / 2)
+    fullQuarter |*| p `shouldApproximate` Point 1 0 0
 
   it "Rotation Z" $ do
     let p = Point 0 1 0
         halfQuarter = rotationZ (pi / 4)
         fullQuarter = rotationZ (pi / 2)
-    halfQuarter |*> p `shouldApproximate` Point (-sqrt 2 / 2) (sqrt 2 / 2) 0
-    fullQuarter |*> p `shouldApproximate` Point (-1) 0 0
+    halfQuarter |*| p `shouldApproximate` Point (-sqrt 2 / 2) (sqrt 2 / 2) 0
+    fullQuarter |*| p `shouldApproximate` Point (-1) 0 0
 
   it "Shearing" $ do
     let p = Point 2 3 4
-    shearing 1 0 0 0 0 0 |*> p `shouldBe` Point 5 3 4
-    shearing 0 1 0 0 0 0 |*> p `shouldBe` Point 6 3 4
-    shearing 0 0 1 0 0 0 |*> p `shouldBe` Point 2 5 4
-    shearing 0 0 0 1 0 0 |*> p `shouldBe` Point 2 7 4
-    shearing 0 0 0 0 1 0 |*> p `shouldBe` Point 2 3 6
-    shearing 0 0 0 0 0 1 |*> p `shouldBe` Point 2 3 7
+    shearing 1 0 0 0 0 0 |*| p `shouldBe` Point 5 3 4
+    shearing 0 1 0 0 0 0 |*| p `shouldBe` Point 6 3 4
+    shearing 0 0 1 0 0 0 |*| p `shouldBe` Point 2 5 4
+    shearing 0 0 0 1 0 0 |*| p `shouldBe` Point 2 7 4
+    shearing 0 0 0 0 1 0 |*| p `shouldBe` Point 2 3 6
+    shearing 0 0 0 0 0 1 |*| p `shouldBe` Point 2 3 7
 
   it "Chaining" $ do
     let p = Point 1 0 1
         a = rotationX (pi / 2)
         b = scaling 5 5 5
         c = translation 10 5 7
-        p2 = a |*> p
-        p3 = b |*> p2
-        p4 = c |*> p3
+        p2 = a |*| p
+        p3 = b |*| p2
+        p4 = c |*| p3
     p2 `shouldApproximate` Point 1 (-1) 0
     p3 `shouldApproximate` Point 5 (-5) 0
     p4 `shouldApproximate` Point 15 0 7
-    (c * b * a) |*> p `shouldBe` Point 15 0 7
-    a |> b |> c |*> p `shouldBe` Point 15 0 7
+    (c * b * a) |*| p `shouldBe` Point 15 0 7
+    a |> b |> c |*| p `shouldBe` Point 15 0 7
 
   it "Functor" $ do
     let matrixTrigger :: Matrix (Double, Double, Double)

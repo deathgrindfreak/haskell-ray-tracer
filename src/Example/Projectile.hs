@@ -8,14 +8,14 @@ import RayTracer.Color
 import RayTracer.Tuple
 
 data Projectile = Projectile
-  { position :: Tuple Double
-  , velocity :: Tuple Double
+  { position :: Point Double
+  , velocity :: Vec Double
   }
   deriving (Show)
 
 data Environment = Environment
-  { gravity :: Tuple Double
-  , wind :: Tuple Double
+  { gravity :: Vec Double
+  , wind :: Vec Double
   }
   deriving (Show)
 
@@ -23,7 +23,7 @@ run :: T.Text
 run = let canvas = makeCanvas (900, 500)
           projectile = Projectile
             { position = Point 0 1 0
-            , velocity = norm (Vec 1 1.8 0) * Scalar 11.25
+            , velocity = norm (Vec 1 1.8 0) |*| Scalar 11.25
             }
           environment = Environment
             { gravity = Vec 0 (-0.1) 0
@@ -42,18 +42,14 @@ plotProjectile p e =
   unfoldr
   (\projectile ->
         let p' = tick projectile e
-            (_, y) = getPoint (position p')
-         in if y <= 0 then Nothing else Just (toPoint p', p')
-     )
+            Point _ y _ = position p'
+         in if y <= 0 then Nothing else Just (toPoint p', p'))
   p
   where
-    toPoint pr = let (x, y) = getPoint (position pr) in  (round x, round y)
-
-    getPoint (Point x y _) = (x, y)
-    getPoint _ = error "Not a point"
+    toPoint pr = let Point x y _ = position pr in (round x, round y)
 
 tick :: Projectile -> Environment -> Projectile
 tick p@(Projectile pos v) (Environment g w) =
-  p { position = pos + v
-    , velocity = v + g + w
+  p { position = pos |+| v
+    , velocity = v |+| g |+| w
     }

@@ -39,6 +39,7 @@ library:
     - RayTracer.Canvas
     - RayTracer.Tuple
     - RayTracer.Matrix
+    - RayTracer.Ray
     - Example.Projectile
     - Example.Clock
 
