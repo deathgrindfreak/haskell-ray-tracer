@@ -1,4 +1,5 @@
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 module RayTracer.Ray
   ( Ray(..)
