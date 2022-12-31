@@ -14,7 +14,6 @@ module RayTracer.Tuple
   , norm
   ) where
 
-import Test.QuickCheck
 import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
 import Test.QuickCheck (Arbitrary(arbitrary))
 
@@ -24,7 +23,7 @@ infixl 6 |+|
 
 data Vec a = Vec !a !a !a deriving (Show, Eq, Functor)
 data Point a = Point !a !a !a deriving (Show, Eq, Functor)
-newtype Scalar a = Scalar a deriving (Show, Eq)
+newtype Scalar a = Scalar { fromScalar :: a } deriving (Show, Eq)
 
 instance Applicative Vec where
   pure a = Vec a a a
@@ -46,6 +45,9 @@ instance VecAdd Point Vec Point where
 instance VecAdd Vec Point Point where
   Vec x1 y1 z1 |+| Point x2 y2 z2 = Point (x1 + x2) (y1 + y2) (z1 + z2)
 
+instance VecAdd Scalar Scalar Scalar where
+  Scalar a |+| Scalar b = Scalar (a + b)
+
 class VecSub v w z | v w -> z where
   (|-|) :: Num a => v a -> w a -> z a
 
@@ -54,6 +56,9 @@ instance VecSub Point Point Vec where
 
 instance VecSub Vec Vec Vec where
   Vec x1 y1 z1 |-| Vec x2 y2 z2 = Vec (x1 - x2) (y1 - y2) (z1 - z2)
+
+instance VecSub Scalar Scalar Scalar where
+  Scalar a |-| Scalar b = Scalar (a - b)
 
 class VecMult v w z | v w -> z where
   (|*|) :: (Num a, Eq a) => v a -> w a -> z a
@@ -72,6 +77,9 @@ instance VecMult Scalar Point Point where
 
 instance VecMult Point Scalar Point where
   Point b c d |*| Scalar a = Point (a * b) (a * c) (a * d)
+
+instance VecMult Scalar Scalar Scalar where
+  Scalar a |*| Scalar b = Scalar (a * b)
 
 {-# SPECIALIZE cross :: Vec Double -> Vec Double -> Vec Double #-}
 cross :: (Num a) => Vec a -> Vec a -> Vec a
