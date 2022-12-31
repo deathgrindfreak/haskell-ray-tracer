@@ -4,7 +4,7 @@
 
 module RayTracer.Matrix
   ( Matrix(..)
-  , TransformMatrix
+  , Transform
   , (!)
   , update
   , dims
@@ -21,8 +21,8 @@ module RayTracer.Matrix
   , minor
   , cofactor
   , determinant
-  , isInvertable
-  , inverse
+  , Invertable(..)
+  , identityTransform
   , translation
   , scaling
   , rotationX
@@ -65,7 +65,7 @@ prettyPrintMatrix m@M { rows, cols } =
       border = replicate (sum ls + 3 * cols - 1) '═'
       rowValues i = [padRight (show (m ! (i, j))) (ls !! j) | j <- [0..cols-1]]
   in unlines $
-        ("╔" ++ border ++ "╗") :
+        ("\n╔" ++ border ++ "╗") :
         ["║ " ++ intercalate " ┃ " (rowValues i) ++ " ║" | i <- [0..rows-1]]
         ++ ["╚" ++ border ++ "╝"]
   where
@@ -159,27 +159,31 @@ determinant m@M { rows, cols }
   | otherwise = sum [(m ! (0, c)) * cofactor m 0 c | c <- [0..cols - 1]]
 
 class Invertable m where
+  {-# MINIMAL isInvertable, inverse #-}
+
   isInvertable :: (Num a, Eq a) => m a -> Bool
-  inverse :: (Fractional a, Eq a) => m a -> Maybe (m a)
+  inverse :: (Fractional a, Eq a) => m a -> m a
+
+  safeInverse :: (Fractional a, Eq a) => m a -> Maybe (m a)
+  safeInverse m
+    | not $ isInvertable m = Nothing
+    | otherwise = Just $ inverse m
 
 instance Invertable Matrix where
   isInvertable m = determinant m /= 0
-  inverse m
-    | not $ isInvertable m = Nothing
-    | otherwise =
-        Just $ matrix (rows m) (cols m) (\(i, j) -> cofactor m j i / determinant m)
+  inverse m = matrix (rows m) (cols m) (\(i, j) -> cofactor m j i / determinant m)
 
-instance Invertable TransformMatrix where
+instance Invertable Transform where
   isInvertable _ = True
-  inverse (TransformMatrix m) = TransformMatrix <$> inverse m
+  inverse (Transform m) = Transform $ inverse m
 
-newtype TransformMatrix a = TransformMatrix (Matrix a)
+newtype Transform a = Transform (Matrix a)
 
-instance (Num a, Ord a, Show a) => Show (TransformMatrix a) where
-  show (TransformMatrix m) = prettyPrintMatrix m
+instance (Num a, Ord a, Show a) => Show (Transform a) where
+  show (Transform m) = prettyPrintMatrix m
 
-instance Eq a => Eq (TransformMatrix a) where
-  TransformMatrix m == TransformMatrix m' = m == m'
+instance Eq a => Eq (Transform a) where
+  Transform m == Transform m' = m == m'
 
 fromVecCol :: Num a => Vec a -> Matrix a
 fromVecCol (Vec a b c) = fromList 4 1 [a, b, c, 0]
@@ -205,71 +209,74 @@ toVecRow m' = Vec (m' ! (0, 0)) (m' ! (0, 1)) (m' ! (0, 2))
 toPointRow :: Matrix a -> Point a
 toPointRow m' = Point (m' ! (0, 0)) (m' ! (0, 1)) (m' ! (0, 2))
 
-instance VecMult TransformMatrix Vec Vec where
-  TransformMatrix m |*| t = toVecCol (m * fromVecCol t)
+instance VecMult Transform Vec Vec where
+  Transform m |*| t = toVecCol (m * fromVecCol t)
 
-instance VecMult Vec TransformMatrix Vec where
-  t |*| TransformMatrix m = toVecRow (fromVecRow t * transpose m)
+instance VecMult Vec Transform Vec where
+  t |*| Transform m = toVecRow (fromVecRow t * transpose m)
 
-instance VecMult TransformMatrix Point Point where
-  TransformMatrix m |*| t = toPointCol (m * fromPointCol t)
+instance VecMult Transform Point Point where
+  Transform m |*| t = toPointCol (m * fromPointCol t)
 
-instance VecMult Point TransformMatrix Point where
-  t |*| TransformMatrix m = toPointRow (fromPointRow t * transpose m)
+instance VecMult Point Transform Point where
+  t |*| Transform m = toPointRow (fromPointRow t * transpose m)
 
-instance VecMult TransformMatrix TransformMatrix TransformMatrix where
-  TransformMatrix a |*| TransformMatrix b = TransformMatrix (a * b)
+instance VecMult Transform Transform Transform where
+  Transform a |*| Transform b = Transform (a * b)
 
-translation :: Num a => a -> a -> a -> TransformMatrix a
-translation x y z = TransformMatrix $
+identityTransform :: Num a => Transform a
+identityTransform = Transform $ identity 4
+
+translation :: Num a => a -> a -> a -> Transform a
+translation x y z = Transform $
   fromLists [ [1, 0, 0, x]
             , [0, 1, 0, y]
             , [0, 0, 1, z]
             , [0, 0, 0, 1]
             ]
 
-scaling :: Num a => a -> a -> a -> TransformMatrix a
-scaling x y z = TransformMatrix $
+scaling :: Num a => a -> a -> a -> Transform a
+scaling x y z = Transform $
   fromLists [ [x, 0, 0, 0]
             , [0, y, 0, 0]
             , [0, 0, z, 0]
             , [0, 0, 0, 1]
             ]
 
-rotationX :: Floating a => a -> TransformMatrix a
-rotationX r = TransformMatrix $
+rotationX :: Floating a => a -> Transform a
+rotationX r = Transform $
   fromLists [ [1, 0, 0, 0]
             , [0, cos r, -sin r, 0]
             , [0, sin r, cos r, 0]
             , [0, 0, 0, 1]
             ]
 
-rotationY :: Floating a => a -> TransformMatrix a
-rotationY r = TransformMatrix $
+rotationY :: Floating a => a -> Transform a
+rotationY r = Transform $
   fromLists [ [cos r, 0, sin r, 0]
             , [0, 1, 0, 0]
             , [-sin r, 0, cos r, 0]
             , [0, 0, 0, 1]
             ]
 
-rotationZ :: Floating a => a -> TransformMatrix a
-rotationZ r = TransformMatrix $
+rotationZ :: Floating a => a -> Transform a
+rotationZ r = Transform $
   fromLists [ [cos r, -sin r, 0, 0]
             , [sin r, cos r, 0, 0]
             , [0, 0, 1, 0]
             , [0, 0, 0, 1]
             ]
 
-shearing :: Num a => a -> a -> a -> a -> a -> a -> TransformMatrix a
-shearing xy xz yx yz zx zy = TransformMatrix $
+shearing :: Num a => a -> a -> a -> a -> a -> a -> Transform a
+shearing xy xz yx yz zx zy = Transform $
   fromLists [ [1, xy, xz, 0]
             , [yx, 1, yz, 0]
             , [zx, zy, 1, 0]
             , [0, 0, 0, 1]
             ]
 
-(|>) :: Num a => TransformMatrix a -> TransformMatrix a -> TransformMatrix a
-TransformMatrix a |> TransformMatrix b = TransformMatrix (b * a)
+(|>) :: Num a => Transform a -> Transform a -> Transform a
+Transform a |> Transform b = Transform (b * a)
 
 instance Arbitrary a => Arbitrary (Matrix a) where
   arbitrary = do
@@ -280,12 +287,12 @@ instance Arbitrary a => Arbitrary (Matrix a) where
 instance Eq a => EqProp (Matrix a) where
   (=-=) = eq
 
-instance (Arbitrary a, Num a) => Arbitrary (TransformMatrix a) where
-  arbitrary = TransformMatrix <$>
+instance (Arbitrary a, Num a) => Arbitrary (Transform a) where
+  arbitrary = Transform <$>
     matrixM 4 4 (\case
                     (3, 3) -> return 1
                     (3, _) -> return 0
                     _ -> arbitrary)
 
-instance Eq a => EqProp (TransformMatrix a) where
+instance Eq a => EqProp (Transform a) where
   (=-=) = eq

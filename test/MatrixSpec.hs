@@ -107,13 +107,6 @@ spec = describe "Matrix" $ do
                       , [8, 4, 2]
                       ]
 
-        g :: Matrix Float
-        g = fromLists [ [1, 2, 3, 4]
-                      , [2, 4, 4, 2]
-                      , [8, 6, 4, 1]
-                      , [0, 0, 0, 1]
-                      ]
-
     a * b `shouldBe` fromLists [ [20, 22, 50, 48]
                                , [44, 54, 114, 108]
                                , [40, 58, 110, 102]
@@ -133,7 +126,7 @@ spec = describe "Matrix" $ do
                                ]
 
   prop "Transformation on point is commutative" $
-    \(g :: TransformMatrix Double, p :: Point Double) -> do
+    \(g :: Transform Double, p :: Point Double) -> do
       p |*| g `shouldBe` g |*| p
 
   it "Identity" $ do
@@ -252,18 +245,18 @@ spec = describe "Matrix" $ do
 
   prop "Inverse of an Inverse should produce original matrix" $ \(Square m) ->
     if isInvertable m
-      then (inverse m >>= inverse <&> fmap (fromIntegral . round)) `shouldBe` Just m
-      else inverse m `shouldBe` Nothing
+      then (safeInverse m >>= safeInverse <&> fmap (fromIntegral . round)) `shouldBe` Just m
+      else safeInverse m `shouldBe` Nothing
 
   prop "Multiplication by another matrix and inverse should just be the original matrix" $
     \(Square a, Square b) ->
       if isInvertable b
-        then (inverse b >>= \b' -> return (a * b * b') <&> fmap (fromIntegral . round)) `shouldBe` Just a
-        else inverse b `shouldBe` Nothing
+        then (safeInverse b >>= \b' -> return (a * b * b') <&> fmap (fromIntegral . round)) `shouldBe` Just a
+        else safeInverse b `shouldBe` Nothing
 
   it "Translation" $ do
     let transform = translation 5 (-3) 2
-        inv = fromJust (inverse transform)
+        inv = inverse transform
         p = Point (-3) 4 5
         v = Vec (-3) 4 5
     transform |*| p `shouldBe` Point 2 1 7
@@ -276,7 +269,7 @@ spec = describe "Matrix" $ do
 
   it "Scaling" $ do
     let transform = scaling 2 3 4
-        inv = fromJust (inverse transform)
+        inv = inverse transform
         p = Point (-4) 6 8
         v = Vec (-4) 6 8
     transform |*| p `shouldBe` Point (-8) 18 32
@@ -295,9 +288,9 @@ spec = describe "Matrix" $ do
   it "Rotation X" $ do
     let p :: Point Double
         p = Point 0 1 0
-        halfQuarter :: TransformMatrix Double
+        halfQuarter :: Transform Double
         halfQuarter = rotationX (pi / 4)
-        invHalfQuarter = fromJust (inverse halfQuarter)
+        invHalfQuarter = inverse halfQuarter
         fullQuarter = rotationX (pi / 2)
     halfQuarter |*| p `shouldApproximate` Point 0 (sqrt 2 / 2) (sqrt 2 / 2)
     fullQuarter |*| p `shouldApproximate` Point 0 0 1

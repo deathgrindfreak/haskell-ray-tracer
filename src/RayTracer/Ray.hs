@@ -3,6 +3,7 @@
 module RayTracer.Ray
   ( Ray(..)
   , Sphere(..)
+  , makeSphere
   , position
   , Object(..)
   , Intersectable(..)
@@ -12,6 +13,7 @@ module RayTracer.Ray
   ) where
 
 import RayTracer.Tuple
+import RayTracer.Matrix
 import qualified RayTracer.Heap as H
 
 import Data.Function (on)
@@ -20,7 +22,13 @@ data Ray a = Ray
   { origin :: Point a
   , direction :: Vec a
   }
-  deriving (Show)
+  deriving (Show, Eq)
+
+instance VecMult Ray Transform Ray where
+  Ray o d |*| t = Ray (o |*| t) (d |*| t)
+
+instance VecMult Transform Ray Ray where
+  t |*| Ray o d = Ray (t |*| o) (t |*| d)
 
 data Object o = Object
   { objectId :: Int
@@ -34,7 +42,13 @@ instance Eq (Object o) where
 instance Ord (Object o) where
   compare = on compare objectId
 
-data Sphere = Sphere deriving (Show)
+newtype Sphere a = Sphere
+  { transform :: Transform a
+  }
+  deriving (Show)
+
+makeSphere :: Num a => Sphere a
+makeSphere = Sphere { transform = identityTransform }
 
 data Intersection a b = Intersection
   { hitObject :: Object a
@@ -52,11 +66,12 @@ position :: (Num a, Eq a) => Ray a -> a -> Point a
 position Ray { origin, direction } t = origin |+| direction |*| Scalar t
 
 class Intersectable o where
-  intersect :: RealFloat a => Object o -> Ray a -> [Intersection o a]
+  intersect :: RealFloat a => Object (o a) -> Ray a -> [Intersection (o a) a]
 
 instance Intersectable Sphere where
-  intersect o ray =
-    let sphereToRay = origin ray |-| Point 0 0 0
+  intersect o@Object { object = Sphere { transform } } r =
+    let ray = inverse transform |*| r
+        sphereToRay = origin ray |-| Point 0 0 0
         a = fromScalar $ direction ray |*| direction ray
         b = fromScalar $ Scalar 2 |*| direction ray |*| sphereToRay
         c = fromScalar $ sphereToRay |*| sphereToRay |-| Scalar 1
