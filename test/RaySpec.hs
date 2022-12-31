@@ -1,12 +1,13 @@
 module RaySpec (spec) where
 
-import Test.Hspec.QuickCheck
-import SpecHelper
+import           Approximate
+import qualified RayTracer.Heap        as H
+import           RayTracer.Matrix
+import           RayTracer.Ray
+import           RayTracer.Tuple
+import           SpecHelper
 
-import RayTracer.Ray
-import RayTracer.Tuple
-import RayTracer.Matrix
-import qualified RayTracer.Heap as H
+import           Test.Hspec.QuickCheck
 
 spec :: Spec
 spec = describe "Ray" $ do
@@ -20,36 +21,36 @@ spec = describe "Ray" $ do
   it "Intersect ray through sphere" $ do
     let r :: Ray Double
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-        s = Object 0 makeSphere
+        s = makeSphere 0
         xs = s `intersect` r
     xs `shouldBe` map (Intersection s) [4.0, 6.0]
 
   it "Intersect ray tangent to sphere" $ do
     let r = Ray (Point 0 1 (-5)) (Vec 0 0 1)
-        s = Object 0 makeSphere
+        s = makeSphere 0
         xs = s `intersect` r
     xs `shouldBe` map (Intersection s) [5.0, 5.0]
 
   it "Intersect ray misses sphere" $ do
     let r = Ray (Point 0 2 (-5)) (Vec 0 0 1)
-        s = Object 0 makeSphere
+        s = makeSphere 0
         xs = s `intersect` r
     xs `shouldBe` []
 
   it "Intersect ray inside of sphere" $ do
     let r = Ray (Point 0 0 0) (Vec 0 0 1)
-        s = Object 0 makeSphere
+        s = makeSphere 0
         xs = s `intersect` r
     xs `shouldBe` map (Intersection s) [-1.0, 1.0]
 
   it "Intersect ray ahead of sphere" $ do
     let r = Ray (Point 0 0 5) (Vec 0 0 1)
-        s = Object 0 makeSphere
+        s = makeSphere 0
         xs = s `intersect` r
     xs `shouldBe` map (Intersection s) [-6.0, -4.0]
 
   it "Hit all intersections have positive t" $ do
-    let s = Object 0 makeSphere
+    let s = makeSphere 0
         i1 = Intersection s 1
         i2 = Intersection s 2
         xs :: H.LeftistHeap (Intersection (Sphere Double) Int)
@@ -57,7 +58,7 @@ spec = describe "Ray" $ do
     hit xs `shouldBe` Just i1
 
   it "Hit when some intersections have negative t" $ do
-    let s = Object 0 makeSphere
+    let s = makeSphere 0
         i1 = Intersection s (-1)
         i2 = Intersection s 2
         xs :: H.LeftistHeap (Intersection (Sphere Double) Int)
@@ -65,7 +66,7 @@ spec = describe "Ray" $ do
     hit xs `shouldBe` Just i2
 
   it "Hit when all intersections have negative t" $ do
-    let s = Object 0 makeSphere
+    let s = makeSphere 0
         i1 = Intersection s (-1)
         i2 = Intersection s (-2)
         xs :: H.LeftistHeap (Intersection (Sphere Double) Int)
@@ -73,7 +74,7 @@ spec = describe "Ray" $ do
     hit xs `shouldBe` Nothing
 
   prop "Hit is always the lowest non-negative intersections" $ \(ts :: [Int]) -> do
-      let s = Object 0 makeSphere
+      let s = makeSphere 0
           xs :: H.LeftistHeap (Intersection (Sphere Double) Int)
           xs = intersections H.empty (map (Intersection s) ts)
       t <$> hit xs `shouldBe` if any (>= 0) ts
@@ -95,13 +96,39 @@ spec = describe "Ray" $ do
   it "Intersect a scaled sphere with a ray" $ do
     let r :: Ray Double
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-        s = Object 0 Sphere { transform = scaling 2 2 2 }
+        s = Sphere { sphereId = 0,  transform = scaling 2 2 2 }
         xs = s `intersect` r
     xs `shouldBe` map (Intersection s) [3, 7]
 
   it "Intersect a translated sphere with a ray" $ do
     let r :: Ray Double
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-        s = Object 0 Sphere { transform = translation 5 0 0 }
+        s = Sphere { sphereId = 0, transform = translation 5 0 0 }
         xs = s `intersect` r
     xs `shouldBe` []
+
+  it "Normal on a sphere with point on x axis" $ do
+    let s = makeSphere 0
+    normalAt s (Point 1 0 0) `shouldBe` Vec 1 0 0
+
+  it "Normal on a sphere with point on y axis" $ do
+    let s = makeSphere 0
+    normalAt s (Point 0 1 0) `shouldBe` Vec 0 1 0
+
+  it "Normal on a sphere with point on z axis" $ do
+    let s = makeSphere 0
+    normalAt s (Point 0 0 1) `shouldBe` Vec 0 0 1
+
+  it "Normal on a sphere on non-axial point" $ do
+    let s = makeSphere 0
+    normalAt s (Point (sqrt 3 / 3) (sqrt 3 / 3) (sqrt 3 / 3)) `shouldBe` Vec (sqrt 3 / 3) (sqrt 3 / 3) (sqrt 3 / 3)
+
+  it "Computing the normal on a translated sphere" $ do
+    let s = Sphere 0 (translation 0 1 0)
+        n = normalAt s (Point 0 1.70711 (-0.70711))
+    n `shouldApproximate` Vec 0 0.70711 (-0.70711)
+
+  it "Computing the normal on a transformed sphere" $ do
+    let s = Sphere 0 (rotationZ (pi / 5) |> scaling 1 0.5 1)
+        n = normalAt s (Point 0 (sqrt 2 / 2) (-sqrt 2 / 2))
+    n `shouldApproximate` Vec 0 0.97014 (-0.24254)

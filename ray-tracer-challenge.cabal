@@ -24,9 +24,11 @@ library
       RayTracer.Canvas
       RayTracer.Tuple
       RayTracer.Matrix
+      RayTracer.Heap
       RayTracer.Ray
       Example.Projectile
       Example.Clock
+      Example.SimpleSphere
   other-modules:
       Paths_ray_tracer_challenge
   hs-source-dirs:

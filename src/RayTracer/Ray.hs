@@ -1,5 +1,5 @@
-{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE NamedFieldPuns        #-}
 
 module RayTracer.Ray
   ( Ray(..)
@@ -7,20 +7,19 @@ module RayTracer.Ray
   , makeSphere
   , position
   , Object(..)
-  , Intersectable(..)
   , Intersection(..)
   , intersections
   , hit
   ) where
 
-import RayTracer.Tuple
-import RayTracer.Matrix
-import qualified RayTracer.Heap as H
+import qualified RayTracer.Heap   as H
+import           RayTracer.Matrix
+import           RayTracer.Tuple
 
-import Data.Function (on)
+import           Data.Function    (on)
 
 data Ray a = Ray
-  { origin :: Point a
+  { origin    :: Point a
   , direction :: Vec a
   }
   deriving (Show, Eq)
@@ -31,29 +30,18 @@ instance VecMult Ray Transform Ray where
 instance VecMult Transform Ray Ray where
   t |*| Ray o d = Ray (t |*| o) (t |*| d)
 
-data Object o = Object
-  { objectId :: Int
-  , object :: o
+data Sphere a = Sphere
+  { sphereId  :: Int
+  , transform :: Transform a
   }
   deriving (Show)
 
-instance Eq (Object o) where
-  (==) = on (==) objectId
-
-instance Ord (Object o) where
-  compare = on compare objectId
-
-newtype Sphere a = Sphere
-  { transform :: Transform a
-  }
-  deriving (Show)
-
-makeSphere :: Num a => Sphere a
-makeSphere = Sphere { transform = identityTransform }
+makeSphere :: Num a => Int -> Sphere a
+makeSphere sphereId = Sphere { sphereId, transform = identityTransform }
 
 data Intersection a b = Intersection
-  { hitObject :: Object a
-  , t :: b
+  { object :: a
+  , t      :: b
   }
   deriving (Show)
 
@@ -66,11 +54,21 @@ instance Ord b => Ord (Intersection a b) where
 position :: (Num a, Eq a) => Ray a -> a -> Point a
 position Ray { origin, direction } t = origin |+| direction |*| Scalar t
 
-class Intersectable o where
-  intersect :: RealFloat a => Object (o a) -> Ray a -> [Intersection (o a) a]
+class Object o where
+  objectId :: o a -> Int
+  intersect :: RealFloat a => o a -> Ray a -> [Intersection (o a) a]
+  normalAt :: RealFloat a => o a -> Point a -> Vec a
 
-instance Intersectable Sphere where
-  intersect o@Object { object = Sphere { transform } } r =
+instance Object Sphere where
+  objectId = sphereId
+
+  normalAt Sphere { transform } p =
+    let objectPoint = inverse transform |*| p
+        objectNormal = objectPoint |-| Point 0 0 0
+        worldNormal = transpose (inverse transform) |*| objectNormal
+     in norm worldNormal
+
+  intersect o@Sphere { transform } r =
     let ray = inverse transform |*| r
         sphereToRay = origin ray |-| Point 0 0 0
         a = fromScalar $ direction ray |*| direction ray

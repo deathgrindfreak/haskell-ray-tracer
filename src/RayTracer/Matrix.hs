@@ -1,6 +1,6 @@
-{-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE NamedFieldPuns        #-}
 
 module RayTracer.Matrix
   ( Matrix(..)
@@ -21,7 +21,7 @@ module RayTracer.Matrix
   , minor
   , cofactor
   , determinant
-  , Invertable(..)
+  , MatrixLike(..)
   , identityTransform
   , translation
   , scaling
@@ -33,19 +33,19 @@ module RayTracer.Matrix
   )
 where
 
-import RayTracer.Tuple
+import           RayTracer.Tuple
 
-import Test.QuickCheck hiding (elements)
-import qualified Test.QuickCheck as Q
-import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
+import qualified Test.QuickCheck          as Q
+import           Test.QuickCheck          hiding (elements)
+import           Test.QuickCheck.Checkers (EqProp, eq, (=-=))
 
-import qualified Data.Vector as V
-import Data.List (intercalate)
-import Data.Bifunctor (Bifunctor(first))
+import           Data.Bifunctor           (Bifunctor (first))
+import           Data.List                (intercalate)
+import qualified Data.Vector              as V
 
 data Matrix a = M
-  { rows :: !Int
-  , cols :: !Int
+  { rows     :: !Int
+  , cols     :: !Int
   , elements :: V.Vector a
   }
 
@@ -130,14 +130,11 @@ fromList rows cols lst =
        else M { rows, cols, elements = V.fromList elements }
 
 fromLists :: [[a]] -> Matrix a
-fromLists [] = error "Empty list"
+fromLists []       = error "Empty list"
 fromLists l@(xs:_) = fromList (length l) (length xs) (concat l)
 
 identity :: Num a => Int -> Matrix a
 identity n = matrix n n (\(i, j) -> if i == j then 1 else 0)
-
-transpose :: Matrix a -> Matrix a
-transpose m@M { rows = n } = matrix n n (\(i, j) -> m ! (j, i))
 
 submatrix :: Matrix a -> Int -> Int -> Matrix a
 submatrix m@M { rows, cols } r c =
@@ -158,24 +155,27 @@ determinant m@M { rows, cols }
   | rows == 2 = (m ! (0, 0)) * (m ! (1, 1)) - (m ! (1, 0)) * (m ! (0, 1))
   | otherwise = sum [(m ! (0, c)) * cofactor m 0 c | c <- [0..cols - 1]]
 
-class Invertable m where
-  {-# MINIMAL isInvertable, inverse #-}
+class MatrixLike m where
+  {-# MINIMAL isInvertable, inverse, transpose #-}
 
   isInvertable :: (Num a, Eq a) => m a -> Bool
   inverse :: (Fractional a, Eq a) => m a -> m a
+  transpose :: m a -> m a
 
   safeInverse :: (Fractional a, Eq a) => m a -> Maybe (m a)
   safeInverse m
     | not $ isInvertable m = Nothing
     | otherwise = Just $ inverse m
 
-instance Invertable Matrix where
+instance MatrixLike Matrix where
   isInvertable m = determinant m /= 0
   inverse m = matrix (rows m) (cols m) (\(i, j) -> cofactor m j i / determinant m)
+  transpose m@M { rows = n } = matrix n n (\(i, j) -> m ! (j, i))
 
-instance Invertable Transform where
+instance MatrixLike Transform where
   isInvertable _ = True
   inverse (Transform m) = Transform $ inverse m
+  transpose (Transform m) = Transform $ transpose m
 
 newtype Transform a = Transform (Matrix a)
 
@@ -292,7 +292,7 @@ instance (Arbitrary a, Num a) => Arbitrary (Transform a) where
     matrixM 4 4 (\case
                     (3, 3) -> return 1
                     (3, _) -> return 0
-                    _ -> arbitrary)
+                    _      -> arbitrary)
 
 instance Eq a => EqProp (Transform a) where
   (=-=) = eq

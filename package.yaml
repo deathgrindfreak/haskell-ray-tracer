@@ -44,6 +44,7 @@ library:
     - RayTracer.Ray
     - Example.Projectile
     - Example.Clock
+    - Example.SimpleSphere
 
 executables:
   ray-tracer-challenge:
