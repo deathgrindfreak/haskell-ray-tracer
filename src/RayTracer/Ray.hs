@@ -13,16 +13,18 @@ module RayTracer.Ray
   ) where
 
 import qualified RayTracer.Heap   as H
+import           RayTracer.Light
 import           RayTracer.Matrix
 import           RayTracer.Tuple
 
 import           Data.Function    (on)
 
-data Ray a = Ray
-  { origin    :: Point a
-  , direction :: Vec a
-  }
-  deriving (Show, Eq)
+data Ray a
+  = Ray
+      { origin    :: Point a
+      , direction :: Vec a
+      }
+  deriving (Eq, Show)
 
 instance VecMult Ray Transform Ray where
   Ray o d |*| t = Ray (o |*| t) (d |*| t)
@@ -30,19 +32,26 @@ instance VecMult Ray Transform Ray where
 instance VecMult Transform Ray Ray where
   t |*| Ray o d = Ray (t |*| o) (t |*| d)
 
-data Sphere a = Sphere
-  { sphereId  :: Int
-  , transform :: Transform a
-  }
+data Sphere a
+  = Sphere
+      { sphereId  :: Int
+      , transform :: Transform a
+      , material  :: Material
+      }
   deriving (Show)
 
 makeSphere :: Num a => Int -> Sphere a
-makeSphere sphereId = Sphere { sphereId, transform = identityTransform }
+makeSphere sphereId =
+  Sphere { sphereId
+         , transform = identityTransform
+         , material = defaultMaterial
+         }
 
-data Intersection a b = Intersection
-  { object :: a
-  , t      :: b
-  }
+data Intersection a b
+  = Intersection
+      { object :: a
+      , t      :: b
+      }
   deriving (Show)
 
 instance Eq b => Eq (Intersection a b) where

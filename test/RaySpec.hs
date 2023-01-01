@@ -2,6 +2,7 @@ module RaySpec (spec) where
 
 import           Approximate
 import qualified RayTracer.Heap        as H
+import           RayTracer.Light
 import           RayTracer.Matrix
 import           RayTracer.Ray
 import           RayTracer.Tuple
@@ -100,7 +101,10 @@ spec = describe "Ray" $ do
   it "Intersect a scaled sphere with a ray" $ do
     let r :: Ray Double
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-        s = Sphere { sphereId = 0,  transform = scaling 2 2 2 }
+        s = Sphere { sphereId = 0
+                   , transform = scaling 2 2 2
+                   , material = defaultMaterial
+                   }
         xs = s `intersect` r
     xs `shouldBe` map (Intersection s) [3, 7]
 
@@ -128,11 +132,11 @@ spec = describe "Ray" $ do
     normalAt s (Point (sqrt 3 / 3) (sqrt 3 / 3) (sqrt 3 / 3)) `shouldBe` Vec (sqrt 3 / 3) (sqrt 3 / 3) (sqrt 3 / 3)
 
   it "Computing the normal on a translated sphere" $ do
-    let s = Sphere 0 (translation 0 1 0)
+    let s = Sphere 0 (translation 0 1 0) defaultMaterial
         n = normalAt s (Point 0 1.70711 (-0.70711))
     n `shouldApproximate` Vec 0 0.70711 (-0.70711)
 
   it "Computing the normal on a transformed sphere" $ do
-    let s = Sphere 0 (rotationZ (pi / 5) |> scaling 1 0.5 1)
+    let s = Sphere 0 (rotationZ (pi / 5) |> scaling 1 0.5 1) defaultMaterial
         n = normalAt s (Point 0 (sqrt 2 / 2) (-sqrt 2 / 2))
     n `shouldApproximate` Vec 0 0.97014 (-0.24254)

@@ -26,6 +26,7 @@ library
       RayTracer.Matrix
       RayTracer.Heap
       RayTracer.Ray
+      RayTracer.Light
       Example.Projectile
       Example.Clock
       Example.SimpleSphere
