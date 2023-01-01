@@ -5,4 +5,4 @@ A ray trace written in Haskell by following along with the [Ray Tracer Challenge
 ## Current Progress
 I'm currently at the end of chapter 6 with the shaded sphere example
 
-![Shaded Sphere](./img/shaded_sphere.ppm)
+![Shaded Sphere](./img/shaded_sphere.png)
