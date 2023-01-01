@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveFunctor          #-}
 {-# LANGUAGE FunctionalDependencies #-}
 
 module RayTracer.Tuple
@@ -12,10 +12,11 @@ module RayTracer.Tuple
   , dot
   , magnitude
   , norm
+  , reflect
   ) where
 
-import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
-import Test.QuickCheck (Arbitrary(arbitrary))
+import           Test.QuickCheck          (Arbitrary (arbitrary))
+import           Test.QuickCheck.Checkers (EqProp, eq, (=-=))
 
 infixl 7 |*|
 infixl 6 |-|
@@ -97,6 +98,10 @@ magnitude (Vec x y z) = sqrt (x * x + y * y + z * z)
 {-# SPECIALIZE norm :: Vec Double -> Vec Double #-}
 norm :: (RealFloat a) => Vec a -> Vec a
 norm v@(Vec x y z) = Vec (x/r) (y/r) (z/r) where r = magnitude v
+
+{-# SPECIALIZE reflect :: Vec Double -> Vec Double -> Vec Double #-}
+reflect :: (RealFloat a) => Vec a -> Vec a -> Vec a
+reflect inVec normal = inVec |-| normal |*| Scalar 2 |*| (inVec |*| normal)
 
 instance Arbitrary a => Arbitrary (Point a) where
   arbitrary = Point <$> arbitrary <*> arbitrary <*> arbitrary

@@ -2,14 +2,27 @@
 
 module CanvasSpec (spec) where
 
-import SpecHelper
-import RayTracer.Canvas
-import RayTracer.Color
-import Control.Monad (forM_)
-import qualified Data.Text.Lazy as T
+import           RayTracer.Canvas
+import           RayTracer.Color
+import           SpecHelper
+
+import           Control.Monad         (forM_)
+import qualified Data.Text.Lazy        as T
+import           Test.Hspec.QuickCheck
+import           Test.QuickCheck       (Arbitrary (arbitrary), cover, elements)
+
+newtype Dimension = Dimension Int deriving (Show, Eq, Ord)
+
+instance Arbitrary Dimension where
+  arbitrary = Dimension <$> elements [1..1000]
 
 spec :: Spec
 spec = describe "Canvas" $ do
+  prop "toIndex and fromIndex should be inverses" $
+    \(Dimension w :: Dimension, Dimension h :: Dimension, i :: Int) -> do
+      let c = makeCanvas (w, h)
+      toIndex c (fromIndex c i) `shouldBe` i
+
   it "Construction" $ do
     let canvas = makeCanvas (10, 20)
     width canvas `shouldBe` 10
@@ -22,7 +35,7 @@ spec = describe "Canvas" $ do
   it "Pixel Operations" $ do
     let canvas = makeCanvas (10, 20)
         redColor = Color 1 0 0
-        canvas' = writePixel (2, 3) redColor canvas
+        canvas' = writePixel ((2, 3), redColor) canvas
     pixelAt (2, 3) canvas' `shouldBe` redColor
 
   it "PPM Header" $ do
@@ -34,8 +47,8 @@ spec = describe "Canvas" $ do
     let c1 = Color 1.5 0 0
         c2 = Color 0 0.5 0
         c3 = Color (-0.5) 0 1
-        canvas = writePixel (0, 0) c1 . writePixel (2, 1) c2
-          . writePixel (4, 2) c3 $ makeCanvas (5, 3)
+        canvas = writePixel ((0, 0), c1) . writePixel ((2, 1), c2)
+          . writePixel ((4, 2), c3) $ makeCanvas (5, 3)
         body = T.unlines . drop 3 . T.lines $ canvasToPPM canvas
     body `shouldBe` "255 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n\
                     \0 0 0 0 0 0 0 128 0 0 0 0 0 0 0\n\
