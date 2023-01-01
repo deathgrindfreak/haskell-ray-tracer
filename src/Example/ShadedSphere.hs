@@ -13,7 +13,7 @@ import           RayTracer.Tuple
 run :: Text
 run = canvasToPPM $ mapCanvas determineColor canvas
   where
-    canvasPixels = 700
+    canvasPixels = 500
     wallSize = 7.0
     half = wallSize / 2
     pixelSize = wallSize / fromIntegral canvasPixels
