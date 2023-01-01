@@ -30,6 +30,7 @@ library
       Example.Projectile
       Example.Clock
       Example.SimpleSphere
+      Example.ShadedSphere
   other-modules:
       Paths_ray_tracer_challenge
   hs-source-dirs:

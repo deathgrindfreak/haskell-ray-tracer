@@ -15,7 +15,6 @@ module RayTracer.Matrix
   , fromLists
   , toLists
   , elementwise
-  , transpose
   , identity
   , submatrix
   , minor
@@ -43,11 +42,12 @@ import           Data.Bifunctor           (Bifunctor (first))
 import           Data.List                (intercalate)
 import qualified Data.Vector              as V
 
-data Matrix a = M
-  { rows     :: !Int
-  , cols     :: !Int
-  , elements :: V.Vector a
-  }
+data Matrix a
+  = M
+      { rows     :: !Int
+      , cols     :: !Int
+      , elements :: V.Vector a
+      }
 
 dims :: Matrix a -> (Int, Int)
 dims M { rows, cols } = (rows, cols)
@@ -177,7 +177,8 @@ instance MatrixLike Transform where
   inverse (Transform m) = Transform $ inverse m
   transpose (Transform m) = Transform $ transpose m
 
-newtype Transform a = Transform (Matrix a)
+newtype Transform a
+  = Transform (Matrix a)
 
 instance (Num a, Ord a, Show a) => Show (Transform a) where
   show (Transform m) = prettyPrintMatrix m

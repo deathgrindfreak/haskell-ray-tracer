@@ -34,9 +34,9 @@ instance VecMult Transform Ray Ray where
 
 data Sphere a
   = Sphere
-      { sphereId  :: Int
-      , transform :: Transform a
-      , material  :: Material
+      { sphereId       :: Int
+      , transform      :: Transform a
+      , sphereMaterial :: Material
       }
   deriving (Show)
 
@@ -44,7 +44,7 @@ makeSphere :: Num a => Int -> Sphere a
 makeSphere sphereId =
   Sphere { sphereId
          , transform = identityTransform
-         , material = defaultMaterial
+         , sphereMaterial = defaultMaterial
          }
 
 data Intersection a b
@@ -65,11 +65,13 @@ position Ray { origin, direction } t = origin |+| direction |*| Scalar t
 
 class Object o where
   objectId :: o a -> Int
+  material :: o a -> Material
   intersect :: RealFloat a => o a -> Ray a -> [Intersection (o a) a]
   normalAt :: RealFloat a => o a -> Point a -> Vec a
 
 instance Object Sphere where
   objectId = sphereId
+  material = sphereMaterial
 
   normalAt Sphere { transform } p =
     let objectPoint = inverse transform |*| p
@@ -90,11 +92,11 @@ instance Object Sphere where
                  t2 = (-b + sqrt d) / (2 * a)
              in map (Intersection o) [t1, t2]
 
-intersections :: (H.Heap h, Ord b, Num b)
-              => h (Intersection a b)
+intersections :: (Ord b, Num b)
+              => H.LeftistHeap (Intersection a b)
               -> [Intersection a b]
-              -> h (Intersection a b)
+              -> H.LeftistHeap (Intersection a b)
 intersections h = foldr H.insert h . filter ((>= 0) . t)
 
-hit :: (H.Heap h, Ord b) => h (Intersection a b) -> Maybe (Intersection a b)
+hit :: Ord b => H.LeftistHeap (Intersection a b) -> Maybe (Intersection a b)
 hit = H.findMin

@@ -39,5 +39,5 @@ instance (Num a) =>  Num (Color a) where
   abs = fmap abs
   signum = fmap signum
 
-toColor :: Num a => a -> Color a
+toColor :: a -> Color a
 toColor a = Color a a a
