@@ -9,7 +9,7 @@ import           SpecHelper
 import           Control.Monad         (forM_)
 import qualified Data.Text.Lazy        as T
 import           Test.Hspec.QuickCheck
-import           Test.QuickCheck       (Arbitrary (arbitrary), cover, elements)
+import           Test.QuickCheck       (Arbitrary (arbitrary), elements)
 
 newtype Dimension = Dimension Int deriving (Show, Eq, Ord)
 
@@ -19,9 +19,10 @@ instance Arbitrary Dimension where
 spec :: Spec
 spec = describe "Canvas" $ do
   prop "toIndex and fromIndex should be inverses" $
-    \(Dimension w :: Dimension, Dimension h :: Dimension, i :: Int) -> do
+    \(Dimension w :: Dimension, Dimension h :: Dimension, i :: Word) -> do
       let c = makeCanvas (w, h)
-      toIndex c (fromIndex c i) `shouldBe` i
+          i' = fromInteger . toInteger $ i
+      toIndex c (fromIndex c i') `shouldBe` i'
 
   it "Construction" $ do
     let canvas = makeCanvas (10, 20)

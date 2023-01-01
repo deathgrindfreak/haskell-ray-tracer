@@ -9,7 +9,7 @@ module RayTracer.Canvas
   , pixelAt
   , writePixel
   , writePixels
-  , update
+  , mapCanvas
   , canvasToPPM
   , toIndex
   , fromIndex
@@ -52,8 +52,8 @@ writePixels :: [Pixel] -> Canvas -> Canvas
 writePixels coords c =
   c { pixels = pixels c V.// map (first (toIndex c)) (filter (inBounds c . fst) coords) }
 
-update :: (Pixel -> Pixel) -> Canvas -> Canvas
-update f c@Canvas { pixels } = c { pixels = V.imap updatePixel pixels }
+mapCanvas :: (Pixel -> Pixel) -> Canvas -> Canvas
+mapCanvas f c@Canvas { pixels } = c { pixels = V.imap updatePixel pixels }
   where
     updatePixel i color = snd $ f (fromIndex c i, color)
 

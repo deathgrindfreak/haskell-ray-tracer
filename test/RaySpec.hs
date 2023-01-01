@@ -7,7 +7,9 @@ import           RayTracer.Ray
 import           RayTracer.Tuple
 import           SpecHelper
 
+import           Data.Maybe            (isNothing)
 import           Test.Hspec.QuickCheck
+import           Test.QuickCheck       (classify)
 
 spec :: Spec
 spec = describe "Ray" $ do
@@ -74,12 +76,14 @@ spec = describe "Ray" $ do
     hit xs `shouldBe` Nothing
 
   prop "Hit is always the lowest non-negative intersections" $ \(ts :: [Int]) -> do
-      let s = makeSphere 0
-          xs :: H.LeftistHeap (Intersection (Sphere Double) Int)
-          xs = intersections H.empty (map (Intersection s) ts)
-      t <$> hit xs `shouldBe` if any (>= 0) ts
-                                then Just (minimum (filter (>= 0) ts))
-                                else Nothing
+    let s = makeSphere 0
+        xs :: H.LeftistHeap (Intersection (Sphere Double) Int)
+        xs = intersections H.empty (map (Intersection s) ts)
+        ints = if any (>= 0) ts
+                 then Just (minimum (filter (>= 0) ts))
+                 else Nothing
+    classify (isNothing ints) "No intersections" $
+      t <$> hit xs `shouldBe` ints
 
   it "Translating a ray" $ do
     let r :: Ray Double

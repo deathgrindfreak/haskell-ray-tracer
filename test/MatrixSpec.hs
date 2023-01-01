@@ -2,18 +2,17 @@
 
 module MatrixSpec (spec) where
 
-import Test.QuickCheck hiding (elements)
-import Test.QuickCheck.Checkers hiding (inverse)
-import Test.QuickCheck.Classes
-import Test.Hspec.QuickCheck
-import qualified Data.Vector as V
-import Data.Functor ((<&>))
+import           Data.Functor             ((<&>))
+import qualified Data.Vector              as V
+import           Test.Hspec.QuickCheck
+import           Test.QuickCheck          hiding (elements)
+import           Test.QuickCheck.Checkers hiding (inverse)
+import           Test.QuickCheck.Classes
 
-import SpecHelper
-import Approximate (shouldApproximate)
-import RayTracer.Matrix
-import RayTracer.Tuple
-import Data.Maybe (fromJust)
+import           Approximate              (shouldApproximate)
+import           RayTracer.Matrix
+import           RayTracer.Tuple
+import           SpecHelper
 
 newtype Square = Square { toMatrix :: Matrix Double }
   deriving (Show)
@@ -244,15 +243,17 @@ spec = describe "Matrix" $ do
     isInvertable b `shouldBe` False
 
   prop "Inverse of an Inverse should produce original matrix" $ \(Square m) ->
-    if isInvertable m
-      then (safeInverse m >>= safeInverse <&> fmap (fromIntegral . round)) `shouldBe` Just m
-      else safeInverse m `shouldBe` Nothing
+    classify (not . isInvertable $ m) "non-invertable" $
+      if isInvertable m
+        then (safeInverse m >>= safeInverse <&> fmap (fromIntegral . round)) `shouldBe` Just m
+        else safeInverse m `shouldBe` Nothing
 
   prop "Multiplication by another matrix and inverse should just be the original matrix" $
     \(Square a, Square b) ->
-      if isInvertable b
-        then (safeInverse b >>= \b' -> return (a * b * b') <&> fmap (fromIntegral . round)) `shouldBe` Just a
-        else safeInverse b `shouldBe` Nothing
+      classify (not . isInvertable $ b) "non-invertable" $
+        if isInvertable b
+          then (safeInverse b >>= \b' -> return (a * b * b') <&> fmap (fromIntegral . round)) `shouldBe` Just a
+          else safeInverse b `shouldBe` Nothing
 
   it "Translation" $ do
     let transform = translation 5 (-3) 2
