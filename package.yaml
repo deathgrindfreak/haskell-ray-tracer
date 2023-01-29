@@ -14,13 +14,10 @@ extra-source-files:
 
 dependencies:
   - base >= 4.7 && < 5
-  - hspec
-  - hspec-discover
   - vector
   - text
   - QuickCheck
   - checkers
-  - unordered-containers
 
 ghc-options:
 - -Wall
@@ -66,9 +63,18 @@ tests:
       - SpecHelper
       - Approximate
     source-dirs:         test
+    default-extensions:
+      - ScopedTypeVariables
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -fno-warn-type-defaults
+    - -fno-warn-missing-home-modules
     dependencies:
     - ray-tracer-challenge
+    - hspec
+    - hspec-discover
+    - checkers
+    - QuickCheck
+    - hedgehog

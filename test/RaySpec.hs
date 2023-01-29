@@ -103,7 +103,7 @@ spec = describe "Ray" $ do
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
         s = Sphere { sphereId = 0
                    , transform = scaling 2 2 2
-                   , material = defaultMaterial
+                   , sphereMaterial = defaultMaterial
                    }
         xs = s `intersect` r
     xs `shouldBe` map (Intersection s) [3, 7]
@@ -111,7 +111,10 @@ spec = describe "Ray" $ do
   it "Intersect a translated sphere with a ray" $ do
     let r :: Ray Double
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-        s = Sphere { sphereId = 0, transform = translation 5 0 0 }
+        s = Sphere { sphereId = 0
+                   , transform = translation 5 0 0
+                   , sphereMaterial = defaultMaterial
+                   }
         xs = s `intersect` r
     xs `shouldBe` []
 

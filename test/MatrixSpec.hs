@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-type-defaults #-}
-
 module MatrixSpec (spec) where
 
 import           Data.Functor             ((<&>))
@@ -20,8 +18,8 @@ newtype Square = Square { toMatrix :: Matrix Double }
 instance Arbitrary Square where
   arbitrary = do
     let n = 4
-    elements :: V.Vector Int <- V.fromList <$> mapM (const arbitrary) [0..n * n]
-    return . Square $ M { rows = n, cols = n, elements = V.map fromIntegral elements }
+    es :: V.Vector Int <- V.fromList <$> mapM (const arbitrary) [0..n * n]
+    return . Square $ M { rows = n, cols = n, elements = V.map fromIntegral es }
 
 spec :: Spec
 spec = describe "Matrix" $ do

@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.0.
+-- This file has been generated from package.yaml by hpack version 0.35.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -40,10 +40,7 @@ library
       QuickCheck
     , base >=4.7 && <5
     , checkers
-    , hspec
-    , hspec-discover
     , text
-    , unordered-containers
     , vector
   default-language: Haskell2010
 
@@ -58,11 +55,8 @@ executable ray-tracer-challenge
       QuickCheck
     , base >=4.7 && <5
     , checkers
-    , hspec
-    , hspec-discover
     , ray-tracer-challenge
     , text
-    , unordered-containers
     , vector
   default-language: Haskell2010
 
@@ -74,15 +68,17 @@ test-suite ray-tracer-challenge-test
       Approximate
   hs-source-dirs:
       test
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  default-extensions:
+      ScopedTypeVariables
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N -fno-warn-type-defaults -fno-warn-missing-home-modules
   build-depends:
       QuickCheck
     , base >=4.7 && <5
     , checkers
+    , hedgehog
     , hspec
     , hspec-discover
     , ray-tracer-challenge
     , text
-    , unordered-containers
     , vector
   default-language: Haskell2010
