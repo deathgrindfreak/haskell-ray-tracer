@@ -56,7 +56,7 @@ spec = describe "Ray" $ do
     let s = makeSphere 0
         i1 = Intersection s 1
         i2 = Intersection s 2
-        xs :: H.LeftistHeap (Intersection (Sphere Double) Int)
+        xs :: H.LeftistHeap (Intersection (Object Double) Int)
         xs = intersections H.empty [i1, i2]
     hit xs `shouldBe` Just i1
 
@@ -64,7 +64,7 @@ spec = describe "Ray" $ do
     let s = makeSphere 0
         i1 = Intersection s (-1)
         i2 = Intersection s 2
-        xs :: H.LeftistHeap (Intersection (Sphere Double) Int)
+        xs :: H.LeftistHeap (Intersection (Object Double) Int)
         xs = intersections H.empty [i1, i2]
     hit xs `shouldBe` Just i2
 
@@ -72,13 +72,13 @@ spec = describe "Ray" $ do
     let s = makeSphere 0
         i1 = Intersection s (-1)
         i2 = Intersection s (-2)
-        xs :: H.LeftistHeap (Intersection (Sphere Double) Int)
+        xs :: H.LeftistHeap (Intersection (Object Double) Int)
         xs = intersections H.empty [i1, i2]
     hit xs `shouldBe` Nothing
 
   prop "Hit is always the lowest non-negative intersections" $ \(ts :: [Int]) -> do
     let s = makeSphere 0
-        xs :: H.LeftistHeap (Intersection (Sphere Double) Int)
+        xs :: H.LeftistHeap (Intersection (Object Double) Int)
         xs = intersections H.empty (map (Intersection s) ts)
         ints = if any (>= 0) ts
                  then Just (minimum (filter (>= 0) ts))
@@ -101,9 +101,9 @@ spec = describe "Ray" $ do
   it "Intersect a scaled sphere with a ray" $ do
     let r :: Ray Double
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-        s = Sphere { sphereId = 0
+        s = Sphere { objectId = 0
                    , transform = scaling 2 2 2
-                   , sphereMaterial = defaultMaterial
+                   , material = defaultMaterial
                    }
         xs = s `intersect` r
     xs `shouldBe` map (Intersection s) [3, 7]
@@ -111,9 +111,9 @@ spec = describe "Ray" $ do
   it "Intersect a translated sphere with a ray" $ do
     let r :: Ray Double
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-        s = Sphere { sphereId = 0
+        s = Sphere { objectId = 0
                    , transform = translation 5 0 0
-                   , sphereMaterial = defaultMaterial
+                   , material = defaultMaterial
                    }
         xs = s `intersect` r
     xs `shouldBe` []

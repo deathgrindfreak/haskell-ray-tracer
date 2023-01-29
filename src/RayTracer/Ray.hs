@@ -3,13 +3,14 @@
 
 module RayTracer.Ray
   ( Ray(..)
-  , Sphere(..)
+  , Object(..)
   , makeSphere
   , position
-  , Object(..)
   , Intersection(..)
   , intersections
   , hit
+  , intersect
+  , normalAt
   ) where
 
 import qualified RayTracer.Heap   as H
@@ -32,19 +33,19 @@ instance VecMult Ray Transform Ray where
 instance VecMult Transform Ray Ray where
   t |*| Ray o d = Ray (t |*| o) (t |*| d)
 
-data Sphere a
+data Object a
   = Sphere
-      { sphereId       :: Int
-      , transform      :: Transform a
-      , sphereMaterial :: Material
+      { objectId  :: Int
+      , transform :: Transform a
+      , material  :: Material
       }
   deriving (Show)
 
-makeSphere :: Num a => Int -> Sphere a
-makeSphere sphereId =
-  Sphere { sphereId
+makeSphere :: Num a => Int -> Object a
+makeSphere objectId =
+  Sphere { objectId
          , transform = identityTransform
-         , sphereMaterial = defaultMaterial
+         , material = defaultMaterial
          }
 
 data Intersection a b
@@ -63,34 +64,26 @@ instance Ord b => Ord (Intersection a b) where
 position :: (Num a, Eq a) => Ray a -> a -> Point a
 position Ray { origin, direction } t = origin |+| direction |*| Scalar t
 
-class Object o where
-  objectId :: o a -> Int
-  material :: o a -> Material
-  intersect :: RealFloat a => o a -> Ray a -> [Intersection (o a) a]
-  normalAt :: RealFloat a => o a -> Point a -> Vec a
+intersect :: RealFloat a => Object a -> Ray a -> [Intersection (Object a) a]
+intersect o@Sphere { transform } r =
+  let ray = inverse transform |*| r
+      sphereToRay = origin ray |-| Point 0 0 0
+      a = fromScalar $ direction ray |*| direction ray
+      b = fromScalar $ Scalar 2 |*| direction ray |*| sphereToRay
+      c = fromScalar $ sphereToRay |*| sphereToRay |-| Scalar 1
+      d = b * b - 4 * a * c
+   in if d < 0
+      then []
+      else let t1 = (-b - sqrt d) / (2 * a)
+               t2 = (-b + sqrt d) / (2 * a)
+           in map (Intersection o) [t1, t2]
 
-instance Object Sphere where
-  objectId = sphereId
-  material = sphereMaterial
-
-  normalAt Sphere { transform } p =
-    let objectPoint = inverse transform |*| p
-        objectNormal = objectPoint |-| Point 0 0 0
-        worldNormal = transpose (inverse transform) |*| objectNormal
-     in norm worldNormal
-
-  intersect o@Sphere { transform } r =
-    let ray = inverse transform |*| r
-        sphereToRay = origin ray |-| Point 0 0 0
-        a = fromScalar $ direction ray |*| direction ray
-        b = fromScalar $ Scalar 2 |*| direction ray |*| sphereToRay
-        c = fromScalar $ sphereToRay |*| sphereToRay |-| Scalar 1
-        d = b * b - 4 * a * c
-     in if d < 0
-        then []
-        else let t1 = (-b - sqrt d) / (2 * a)
-                 t2 = (-b + sqrt d) / (2 * a)
-             in map (Intersection o) [t1, t2]
+normalAt :: RealFloat a => Object a -> Point a -> Vec a
+normalAt Sphere { transform } p =
+  let objectPoint = inverse transform |*| p
+      objectNormal = objectPoint |-| Point 0 0 0
+      worldNormal = transpose (inverse transform) |*| objectNormal
+   in norm worldNormal
 
 intersections :: (Ord b, Num b)
               => H.LeftistHeap (Intersection a b)
