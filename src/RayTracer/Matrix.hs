@@ -294,6 +294,3 @@ instance (Arbitrary a, Num a) => Arbitrary (Transform a) where
                     (3, 3) -> return 1
                     (3, _) -> return 0
                     _      -> arbitrary)
-
-instance Eq a => EqProp (Transform a) where
-  (=-=) = eq

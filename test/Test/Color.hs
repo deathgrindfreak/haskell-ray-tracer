@@ -1,13 +1,13 @@
-module ColorSpec (spec) where
+module Test.Color (spec_Color) where
 
-import SpecHelper
+import Test.Hspec
 import RayTracer.Color
 
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes
 
-spec :: Spec
-spec = describe "Color" $ do
+spec_Color :: Spec
+spec_Color = describe "Color" $ do
   it "Addition" $ do
     Color 9 6 75 + Color 7 1 25 `shouldBe` Color 16 7 100
   it "Subtraction" $ do

@@ -12,26 +12,34 @@ extra-source-files:
 - README.md
 - CHANGELOG.md
 
-dependencies:
-  - base >= 4.7 && < 5
-  - vector
-  - text
-  - QuickCheck
-  - checkers
-
 ghc-options:
-- -Wall
-- -Wcompat
-- -Widentities
-- -Wincomplete-record-updates
-- -Wincomplete-uni-patterns
-- -Wmissing-export-lists
-- -Wmissing-home-modules
-- -Wpartial-fields
-- -Wredundant-constraints
+  - -Wall
+  - -Wcompat
+  - -Widentities
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wmissing-export-lists
+  - -Wmissing-home-modules
+  - -Wpartial-fields
+  - -Wredundant-constraints
+  - -Werror
+  - -Wunused-packages
+  - -Wno-implicit-prelude
+  - -Wno-safe
+  - -Wno-unsafe
+  - -Wno-unticked-promoted-constructors
+
+default-extensions:
+  - OverloadedStrings
 
 library:
   source-dirs: src
+  dependencies:
+    - base
+    - vector
+    - text
+    - QuickCheck
+    - checkers
   exposed-modules:
     - RayTracer.Color
     - RayTracer.Canvas
@@ -40,41 +48,50 @@ library:
     - RayTracer.Heap
     - RayTracer.Ray
     - RayTracer.Light
+    - RayTracer.World
     - Example.Projectile
     - Example.Clock
     - Example.SimpleSphere
     - Example.ShadedSphere
 
 executables:
-  ray-tracer-challenge:
+  ray-tracer:
     main:             Main.hs
     source-dirs:         app
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - ray-tracer-challenge
+      - ray-tracer-challenge
+      - base
+      - text
 
 tests:
-  ray-tracer-challenge-test:
-    main:                Spec.hs
-    other-modules:
-      - SpecHelper
-      - Approximate
-    source-dirs:         test
+  spec:
+    main: Driver.hs
+    source-dirs: test
     default-extensions:
       - ScopedTypeVariables
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    - -fno-warn-type-defaults
-    - -fno-warn-missing-home-modules
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+      - -fno-warn-type-defaults
+      - -fno-warn-missing-home-modules
+      - -Wno-missing-export-lists
+      - -Wno-unused-packages
     dependencies:
-    - ray-tracer-challenge
-    - hspec
-    - hspec-discover
-    - checkers
-    - QuickCheck
-    - hedgehog
+      - ray-tracer-challenge
+      - base
+      - text
+      - vector
+      - hspec
+      - tasty
+      - tasty-discover
+      - tasty-hspec
+      - tasty-hunit
+      - tasty-hedgehog
+      - checkers
+      - QuickCheck
+      - hedgehog

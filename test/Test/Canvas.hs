@@ -1,10 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module CanvasSpec (spec) where
+module Test.Canvas (spec_Canvas) where
 
 import           RayTracer.Canvas
 import           RayTracer.Color
-import           SpecHelper
+import           Test.Hspec
 
 import           Control.Monad         (forM_)
 import qualified Data.Text.Lazy        as T
@@ -16,8 +16,8 @@ newtype Dimension = Dimension Int deriving (Show, Eq, Ord)
 instance Arbitrary Dimension where
   arbitrary = Dimension <$> elements [1..1000]
 
-spec :: Spec
-spec = describe "Canvas" $ do
+spec_Canvas :: Spec
+spec_Canvas = describe "Canvas" $ do
   prop "toIndex and fromIndex should be inverses" $
     \(Dimension w :: Dimension, Dimension h :: Dimension, i :: Word) -> do
       let c = makeCanvas (w, h)

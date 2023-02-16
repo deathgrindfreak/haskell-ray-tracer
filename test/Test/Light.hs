@@ -1,13 +1,13 @@
-module LightSpec (spec) where
+module Test.Light (spec_Light) where
 
-import           Approximate
+import           Test.Helper.Approximate
 import           RayTracer.Color
 import           RayTracer.Light
 import           RayTracer.Tuple
-import           SpecHelper
+import           Test.Hspec
 
-spec :: Spec
-spec = describe "Light" $ do
+spec_Light :: Spec
+spec_Light = describe "Light" $ do
   let m = defaultMaterial
       position = Point 0 0 0
 

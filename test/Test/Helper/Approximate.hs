@@ -1,4 +1,10 @@
-module Approximate (ApproxEq, Identity(..), shouldApproximate) where
+module Test.Helper.Approximate
+  ( ApproxEq
+  , Identity(..)
+  , shouldApproximate
+  , (~==)
+  )
+where
 
 import           RayTracer.Color
 import           RayTracer.Matrix
@@ -6,12 +12,19 @@ import           RayTracer.Tuple
 
 import qualified Data.Vector      as V
 import           Test.Hspec
+import Hedgehog (MonadTest, (===))
 
 infix 1 `shouldApproximate`
 
 shouldApproximate :: (HasCallStack, Ord a, Floating a, ApproxEq f)
                   => f a -> f a -> Expectation
 shouldApproximate a b = (a `approxEq` b) `shouldBe` True
+
+infix 4 ~==
+
+(~==) :: (MonadTest m, HasCallStack, Ord a, Floating a, ApproxEq f)
+      => f a -> f a -> m ()
+a ~== b = (a `approxEq` b) === True
 
 epsilon :: Floating a => a
 epsilon = 1e-5

@@ -1,19 +1,19 @@
-module RaySpec (spec) where
+module Test.Ray (spec_Ray) where
 
-import           Approximate
+import           Test.Helper.Approximate
 import qualified RayTracer.Heap        as H
 import           RayTracer.Light
 import           RayTracer.Matrix
 import           RayTracer.Ray
 import           RayTracer.Tuple
-import           SpecHelper
+import           Test.Hspec
 
 import           Data.Maybe            (isNothing)
 import           Test.Hspec.QuickCheck
 import           Test.QuickCheck       (classify)
 
-spec :: Spec
-spec = describe "Ray" $ do
+spec_Ray :: Spec
+spec_Ray = describe "Ray" $ do
   it "Position" $ do
     let r = Ray (Point 2 3 4) (Vec 1 0 0)
     position r 0 `shouldBe` Point 2 3 4

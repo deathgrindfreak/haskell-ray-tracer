@@ -1,13 +1,11 @@
-{-# OPTIONS_GHC -fno-warn-type-defaults #-}
+module Test.Tuple (spec_Tuple) where
 
-module TupleSpec (spec) where
-
-import           Approximate
+import           Test.Helper.Approximate
 import           RayTracer.Tuple
-import           SpecHelper
+import           Test.Hspec
 
-spec :: Spec
-spec = describe "Tuple" $ do
+spec_Tuple :: Spec
+spec_Tuple = describe "Tuple" $ do
   it "Addition" $ do
     Point 3 (-2) 5 |+| Vec (-2) 3 1 `shouldBe` Point 1 1 6
 

@@ -1,28 +1,62 @@
-module MatrixSpec (spec) where
+{-# LANGUAGE OverloadedStrings #-}
 
-import           Data.Functor             ((<&>))
+module Test.Matrix
+  ( spec_Matrix
+  , test_Matrix
+  )
+where
+
 import qualified Data.Vector              as V
+
+import Hedgehog ((===), Gen)
+import qualified Hedgehog as HH
+import qualified Hedgehog.Gen as HG
+import qualified Hedgehog.Range as HR
+
 import           Test.Hspec.QuickCheck
-import           Test.QuickCheck          hiding (elements)
 import           Test.QuickCheck.Checkers hiding (inverse)
 import           Test.QuickCheck.Classes
 
-import           Approximate              (shouldApproximate)
+import           Test.Helper.Approximate
 import           RayTracer.Matrix
 import           RayTracer.Tuple
-import           SpecHelper
+import           Test.Hspec
+import qualified Test.Tasty as Tasty
+import qualified Test.Tasty.Hedgehog as THH
 
-newtype Square = Square { toMatrix :: Matrix Double }
-  deriving (Show)
+genSquareMatrix :: Int -> Gen (Matrix Double)
+genSquareMatrix n = do
+  es <- V.fromList <$> HG.list (HR.singleton (n * n)) (HG.int (HR.linear (-1000) 1000))
+  return M { rows = n, cols = n, elements = V.map fromIntegral es }
 
-instance Arbitrary Square where
-  arbitrary = do
-    let n = 4
-    es :: V.Vector Int <- V.fromList <$> mapM (const arbitrary) [0..n * n]
-    return . Square $ M { rows = n, cols = n, elements = V.map fromIntegral es }
+test_Matrix :: Tasty.TestTree
+test_Matrix = do
+  Tasty.testGroup
+    "Matrix"
+    [ THH.testProperty "Inverse of Inverse should be original matrix" $
+        HH.property $ do
+          m <- HH.forAll $ genSquareMatrix 4
 
-spec :: Spec
-spec = describe "Matrix" $ do
+          HH.classify "non-invertable" (not . isInvertable $ m)
+
+          if isInvertable m
+            then (inverse (inverse m)) ~== m
+            else safeInverse m === Nothing
+
+    , THH.testProperty "Multiplication by another matrix and inverse should just be the original matrix" $
+        HH.property $ do
+          a <- HH.forAll $ genSquareMatrix 4
+          b <- HH.forAll $ genSquareMatrix 4
+
+          HH.classify "non-invertable" (not . isInvertable $ b)
+
+          if isInvertable b
+            then a * b * inverse b ~== a
+            else safeInverse b === Nothing
+    ]
+
+spec_Matrix :: Spec
+spec_Matrix = describe "Matrix" $ do
   it "Construction" $ do
     let m = fromLists [ [1, 2, 3, 4]
                       , [5.5, 6.5, 7.5, 8.5]
@@ -239,19 +273,6 @@ spec = describe "Matrix" $ do
 
     determinant b `shouldBe` 0
     isInvertable b `shouldBe` False
-
-  prop "Inverse of an Inverse should produce original matrix" $ \(Square m) ->
-    classify (not . isInvertable $ m) "non-invertable" $
-      if isInvertable m
-        then (safeInverse m >>= safeInverse <&> fmap (fromIntegral . round)) `shouldBe` Just m
-        else safeInverse m `shouldBe` Nothing
-
-  prop "Multiplication by another matrix and inverse should just be the original matrix" $
-    \(Square a, Square b) ->
-      classify (not . isInvertable $ b) "non-invertable" $
-        if isInvertable b
-          then (safeInverse b >>= \b' -> return (a * b * b') <&> fmap (fromIntegral . round)) `shouldBe` Just a
-          else safeInverse b `shouldBe` Nothing
 
   it "Translation" $ do
     let transform = translation 5 (-3) 2
