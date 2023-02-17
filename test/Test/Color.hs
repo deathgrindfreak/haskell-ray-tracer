@@ -1,7 +1,7 @@
 module Test.Color (spec_Color) where
 
-import Test.Hspec
 import RayTracer.Color
+import Test.Hspec
 
 import Test.QuickCheck.Checkers
 import Test.QuickCheck.Classes

@@ -1,16 +1,16 @@
 module Test.Ray (spec_Ray) where
 
-import           Test.Helper.Approximate
-import qualified RayTracer.Heap        as H
-import           RayTracer.Light
-import           RayTracer.Matrix
-import           RayTracer.Ray
-import           RayTracer.Tuple
-import           Test.Hspec
+import qualified RayTracer.Heap as H
+import RayTracer.Light
+import RayTracer.Matrix
+import RayTracer.Ray
+import RayTracer.Tuple
+import Test.Helper.Approximate
+import Test.Hspec
 
-import           Data.Maybe            (isNothing)
-import           Test.Hspec.QuickCheck
-import           Test.QuickCheck       (classify)
+import Data.Maybe (isNothing)
+import Test.Hspec.QuickCheck
+import Test.QuickCheck (classify)
 
 spec_Ray :: Spec
 spec_Ray = describe "Ray" $ do
@@ -76,9 +76,10 @@ spec_Ray = describe "Ray" $ do
   prop "Hit is always the lowest non-negative intersections" $ \(ts :: [Double]) -> do
     let s = makeSphere 0
         xs = intersections H.empty (map (Intersection s) ts)
-        ints = if any (>= 0) ts
-                 then Just (minimum (filter (>= 0) ts))
-                 else Nothing
+        ints =
+          if any (>= 0) ts
+            then Just (minimum (filter (>= 0) ts))
+            else Nothing
     classify (isNothing ints) "No intersections" $
       t <$> hit xs `shouldBe` ints
 
@@ -97,20 +98,24 @@ spec_Ray = describe "Ray" $ do
   it "Intersect a scaled sphere with a ray" $ do
     let r :: Ray Double
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-        s = Sphere { objectId = 0
-                   , transform = scaling 2 2 2
-                   , material = defaultMaterial
-                   }
+        s =
+          Sphere
+            { objectId = 0
+            , transform = scaling 2 2 2
+            , material = defaultMaterial
+            }
         xs = s `intersect` r
     xs `shouldBe` map (Intersection s) [3, 7]
 
   it "Intersect a translated sphere with a ray" $ do
     let r :: Ray Double
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
-        s = Sphere { objectId = 0
-                   , transform = translation 5 0 0
-                   , material = defaultMaterial
-                   }
+        s =
+          Sphere
+            { objectId = 0
+            , transform = translation 5 0 0
+            , material = defaultMaterial
+            }
         xs = s `intersect` r
     xs `shouldBe` []
 

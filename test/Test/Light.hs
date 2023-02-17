@@ -1,10 +1,10 @@
 module Test.Light (spec_Light) where
 
-import           Test.Helper.Approximate
-import           RayTracer.Color
-import           RayTracer.Light
-import           RayTracer.Tuple
-import           Test.Hspec
+import RayTracer.Color
+import RayTracer.Light
+import RayTracer.Tuple
+import Test.Helper.Approximate
+import Test.Hspec
 
 spec_Light :: Spec
 spec_Light = describe "Light" $ do

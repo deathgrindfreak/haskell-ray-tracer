@@ -1,7 +1,7 @@
 module Main (main) where
 
-import qualified Data.Text.Lazy.IO    as T
-import           Example.ShadedSphere
+import qualified Data.Text.Lazy.IO as T
+import Example.ShadedSphere
 
 main :: IO ()
 main = do

@@ -1,10 +1,10 @@
 module Example.SimpleSphere (run) where
 
-import           Data.Text.Lazy   (Text)
-import           RayTracer.Canvas
-import           RayTracer.Color
-import           RayTracer.Ray
-import           RayTracer.Tuple
+import Data.Text.Lazy (Text)
+import RayTracer.Canvas
+import RayTracer.Color
+import RayTracer.Ray
+import RayTracer.Tuple
 
 run :: Text
 run = canvasToPPM $ mapCanvas determineColor canvas
@@ -25,4 +25,4 @@ run = canvasToPPM $ mapCanvas determineColor canvas
           ray :: Ray Double
           ray = Ray rayOrigin (norm (pos |-| rayOrigin))
           iss = sphere `intersect` ray
-      in ((x, y), if null iss then color else Color 1 0 0)
+       in ((x, y), if null iss then color else Color 1 0 0)

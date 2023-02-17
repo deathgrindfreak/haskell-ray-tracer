@@ -1,12 +1,12 @@
 module RayTracer.Heap
-  ( LeftistHeap(..)
-  , Heap(..)
-  , singleton
-  , popMin
+  ( LeftistHeap (..),
+    Heap (..),
+    singleton,
+    popMin,
   )
 where
 
-import Control.Applicative (Applicative(liftA2))
+import Control.Applicative (Applicative (liftA2))
 
 data LeftistHeap a
   = Empty
@@ -31,16 +31,16 @@ instance Heap LeftistHeap where
   merge h Empty = h
   merge t1@(Tree _ x l1 r1) t2@(Tree _ y l2 r2) =
     if x <= y
-    then makeTree x l1 (merge r1 t2)
-    else makeTree y l2 (merge t1 r2)
+      then makeTree x l1 (merge r1 t2)
+      else makeTree y l2 (merge t1 r2)
     where
       rank Empty = 0
       rank (Tree r _ _ _) = r
 
       makeTree a l r =
         if rank l >= rank r
-        then Tree (rank r + 1) a l r
-        else Tree (rank l + 1) a r l
+          then Tree (rank r + 1) a l r
+          else Tree (rank l + 1) a r l
 
   insert x = merge (Tree 1 x Empty Empty)
 

@@ -1,8 +1,8 @@
 module Test.Tuple (spec_Tuple) where
 
-import           Test.Helper.Approximate
-import           RayTracer.Tuple
-import           Test.Hspec
+import RayTracer.Tuple
+import Test.Helper.Approximate
+import Test.Hspec
 
 spec_Tuple :: Spec
 spec_Tuple = describe "Tuple" $ do

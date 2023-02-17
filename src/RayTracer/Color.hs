@@ -1,18 +1,17 @@
 module RayTracer.Color
-  ( Color(..)
-  , toColor
+  ( Color (..),
+    toColor,
   ) where
 
-import           Control.Applicative      (Applicative (liftA2))
-import           Test.QuickCheck          (Arbitrary, arbitrary)
-import           Test.QuickCheck.Checkers (EqProp, eq, (=-=))
+import Control.Applicative (Applicative (liftA2))
+import Test.QuickCheck (Arbitrary, arbitrary)
+import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
 
-data Color a
-  = Color
-      { red   :: !a
-      , green :: !a
-      , blue  :: !a
-      }
+data Color a = Color
+  { red :: !a
+  , green :: !a
+  , blue :: !a
+  }
   deriving (Eq, Show)
 
 instance Arbitrary a => Arbitrary (Color a) where
@@ -28,7 +27,7 @@ instance Applicative Color where
   pure a = Color a a a
   (Color f g h) <*> (Color a b c) = Color (f a) (g b) (h c)
 
-instance (Num a) =>  Num (Color a) where
+instance (Num a) => Num (Color a) where
   {-# SPECIALIZE instance Num (Color Float) #-}
   {-# SPECIALIZE instance Num (Color Double) #-}
 

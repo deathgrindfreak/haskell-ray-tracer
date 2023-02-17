@@ -1,37 +1,38 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Test.Matrix
-  ( spec_Matrix
-  , test_Matrix
+  ( spec_Matrix,
+    test_Matrix,
   )
 where
 
-import qualified Data.Vector              as V
+import qualified Data.Vector as V
 
-import Hedgehog ((===), Gen)
+import Hedgehog (Gen, (===))
 import qualified Hedgehog as HH
 import qualified Hedgehog.Gen as HG
 import qualified Hedgehog.Range as HR
 
-import           Test.Hspec.QuickCheck
-import           Test.QuickCheck.Checkers hiding (inverse)
-import           Test.QuickCheck.Classes
+import Test.Hspec.QuickCheck
+import Test.QuickCheck.Checkers hiding (inverse)
+import Test.QuickCheck.Classes
 
-import           Test.Helper.Approximate
-import           RayTracer.Matrix
-import           RayTracer.Tuple
-import           Test.Hspec
+import RayTracer.Matrix
+import RayTracer.Tuple
+import Test.Helper.Approximate
+import Test.Hspec
 import qualified Test.Tasty as Tasty
 import qualified Test.Tasty.Hedgehog as THH
 
 genSquareMatrix :: Int -> Gen (Matrix Double)
 genSquareMatrix n = do
   es <- V.fromList <$> HG.list (HR.singleton (n * n)) (HG.int (HR.linear (-1000) 1000))
-  return M { rows = n, cols = n, elements = V.map fromIntegral es }
+  return M {rows = n, cols = n, elements = V.map fromIntegral es}
 
 test_Matrix :: Tasty.TestTree
 test_Matrix = do
-  Tasty.testGroup "Matrix"
+  Tasty.testGroup
+    "Matrix"
     [ THH.testProperty "Inverse of Inverse should be original matrix" $
         HH.property $ do
           m <- HH.forAll $ genSquareMatrix 4
@@ -41,7 +42,6 @@ test_Matrix = do
           if isInvertable m
             then (inverse (inverse m)) ~== m
             else safeInverse m === Nothing
-
     , THH.testProperty "Multiplication by another matrix and inverse should just be the original matrix" $
         HH.property $ do
           a <- HH.forAll $ genSquareMatrix 4
@@ -57,11 +57,13 @@ test_Matrix = do
 spec_Matrix :: Spec
 spec_Matrix = describe "Matrix" $ do
   it "Construction" $ do
-    let m = fromLists [ [1, 2, 3, 4]
-                      , [5.5, 6.5, 7.5, 8.5]
-                      , [9, 10, 11, 12]
-                      , [13.5, 14.5, 15.5, 16.5]
-                      ]
+    let m =
+          fromLists
+            [ [1, 2, 3, 4]
+            , [5.5, 6.5, 7.5, 8.5]
+            , [9, 10, 11, 12]
+            , [13.5, 14.5, 15.5, 16.5]
+            ]
         twos = fromList 2 2 [-3, 5, 1, -2]
         threes = fromList 3 3 [-3, 5, 0, 1, -2, -7, 0, 1, 1]
 
@@ -83,77 +85,99 @@ spec_Matrix = describe "Matrix" $ do
     threes ! (2, 2) `shouldBe` 1
 
   it "Equality" $ do
-    let a = fromLists [ [1, 2, 3, 4]
-                      , [5, 6, 7, 8]
-                      , [9, 8, 7, 6]
-                      , [5, 4, 3, 2]
-                      ]
-        b = fromLists [ [1, 2, 3, 4]
-                      , [5, 6, 7, 8]
-                      , [9, 8, 7, 6]
-                      , [5, 4, 3, 2]
-                      ]
+    let a =
+          fromLists
+            [ [1, 2, 3, 4]
+            , [5, 6, 7, 8]
+            , [9, 8, 7, 6]
+            , [5, 4, 3, 2]
+            ]
+        b =
+          fromLists
+            [ [1, 2, 3, 4]
+            , [5, 6, 7, 8]
+            , [9, 8, 7, 6]
+            , [5, 4, 3, 2]
+            ]
     a == b `shouldBe` True
     a == ((+ 1) <$> b) `shouldBe` False
 
   it "Multiplication" $ do
     let a :: Matrix Int
-        a = fromLists [ [1, 2, 3, 4]
-                      , [5, 6, 7, 8]
-                      , [9, 8, 7, 6]
-                      , [5, 4, 3, 2]
-                      ]
+        a =
+          fromLists
+            [ [1, 2, 3, 4]
+            , [5, 6, 7, 8]
+            , [9, 8, 7, 6]
+            , [5, 4, 3, 2]
+            ]
         b :: Matrix Int
-        b = fromLists [ [-2, 1, 2, 3]
-                      , [3, 2, 1, -1]
-                      , [4, 3, 6, 5]
-                      , [1, 2, 7, 8]
-                      ]
+        b =
+          fromLists
+            [ [-2, 1, 2, 3]
+            , [3, 2, 1, -1]
+            , [4, 3, 6, 5]
+            , [1, 2, 7, 8]
+            ]
 
         c :: Matrix Int
-        c = fromLists [ [1, 2, 3, 4]
-                      , [5, 6, 7, 8]
-                      , [9, 8, 7, 6]
-                      ]
+        c =
+          fromLists
+            [ [1, 2, 3, 4]
+            , [5, 6, 7, 8]
+            , [9, 8, 7, 6]
+            ]
 
         d :: Matrix Int
-        d = fromLists [ [-2, 1, 2]
-                      , [3, 2, 1]
-                      , [4, 3, 6]
-                      , [1, 2, 7]
-                      ]
+        d =
+          fromLists
+            [ [-2, 1, 2]
+            , [3, 2, 1]
+            , [4, 3, 6]
+            , [1, 2, 7]
+            ]
 
         e :: Matrix Int
-        e = fromLists [ [1, 2, 3, 4, 5]
-                      , [5, 6, 7, 8, 9]
-                      , [9, 8, 7, 6, 7]
-                      ]
+        e =
+          fromLists
+            [ [1, 2, 3, 4, 5]
+            , [5, 6, 7, 8, 9]
+            , [9, 8, 7, 6, 7]
+            ]
 
         f :: Matrix Int
-        f = fromLists [ [-2, 1, 2]
-                      , [3, 2, 1]
-                      , [4, 3, 6]
-                      , [1, 2, 7]
-                      , [8, 4, 2]
-                      ]
+        f =
+          fromLists
+            [ [-2, 1, 2]
+            , [3, 2, 1]
+            , [4, 3, 6]
+            , [1, 2, 7]
+            , [8, 4, 2]
+            ]
 
-    a * b `shouldBe` fromLists [ [20, 22, 50, 48]
-                               , [44, 54, 114, 108]
-                               , [40, 58, 110, 102]
-                               , [16, 26, 46, 42]
-                               ]
+    a * b
+      `shouldBe` fromLists
+        [ [20, 22, 50, 48]
+        , [44, 54, 114, 108]
+        , [40, 58, 110, 102]
+        , [16, 26, 46, 42]
+        ]
 
-    c * d `shouldBe` fromLists [ [20, 22, 50]
-                               , [44, 54, 114]
-                               , [40, 58, 110]
-                               ]
+    c * d
+      `shouldBe` fromLists
+        [ [20, 22, 50]
+        , [44, 54, 114]
+        , [40, 58, 110]
+        ]
 
-    f * e `shouldBe` fromLists [ [21, 18, 15, 12, 13]
-                               , [22, 26, 30, 34, 40]
-                               , [73, 74, 75, 76, 89]
-                               , [74, 70, 66, 62, 72]
-                               , [46, 56, 66, 76, 90]
-                               ]
+    f * e
+      `shouldBe` fromLists
+        [ [21, 18, 15, 12, 13]
+        , [22, 26, 30, 34, 40]
+        , [73, 74, 75, 76, 89]
+        , [74, 70, 66, 62, 72]
+        , [46, 56, 66, 76, 90]
+        ]
 
   prop "Transformation on point is commutative" $
     \(g :: Transform Double, p :: Point Double) -> do
@@ -161,68 +185,86 @@ spec_Matrix = describe "Matrix" $ do
 
   it "Identity" $ do
     let a :: Matrix Int
-        a = fromLists [ [1, 2, 3, 4]
-                      , [5, 6, 7, 8]
-                      , [9, 8, 7, 6]
-                      , [5, 4, 3, 2]
-                      ]
+        a =
+          fromLists
+            [ [1, 2, 3, 4]
+            , [5, 6, 7, 8]
+            , [9, 8, 7, 6]
+            , [5, 4, 3, 2]
+            ]
 
         b :: Matrix Double
-        b = fromLists [ [-2, 1, 2, 3]
-                      , [3, 2, 1, -1]
-                      , [4, 3, 6, 5]
-                      , [1, 2, 7, 8]
-                      ]
+        b =
+          fromLists
+            [ [-2, 1, 2, 3]
+            , [3, 2, 1, -1]
+            , [4, 3, 6, 5]
+            , [1, 2, 7, 8]
+            ]
 
     a * identity (rows a) `shouldBe` a
     b * identity (rows b) `shouldBe` b
 
   it "Transpose" $ do
-    let a = fromLists [ [0, 9, 3, 0]
-                      , [9, 8, 0, 8]
-                      , [1, 8, 5, 3]
-                      , [0, 0, 5, 8]
-                      ]
+    let a =
+          fromLists
+            [ [0, 9, 3, 0]
+            , [9, 8, 0, 8]
+            , [1, 8, 5, 3]
+            , [0, 0, 5, 8]
+            ]
 
-    transpose a `shouldBe` fromLists [ [0, 9, 1, 0]
-                                     , [9, 8, 8, 0]
-                                     , [3, 0, 5, 5]
-                                     , [0, 8, 3, 8]
-                                     ]
+    transpose a
+      `shouldBe` fromLists
+        [ [0, 9, 1, 0]
+        , [9, 8, 8, 0]
+        , [3, 0, 5, 5]
+        , [0, 8, 3, 8]
+        ]
     identity 5 `shouldBe` transpose (identity 5)
 
   it "Sub-Matrix" $ do
-    let a = fromLists [ [1, 5, 0]
-                      , [-3, 2, 7]
-                      , [0, 6, -3]
-                      ]
-        b = fromLists [ [-6, 1, 1, 6]
-                      , [-8, 5, 8, 6]
-                      , [-1, 0, 8, 2]
-                      , [-7, 1, -1, 1]
-                      ]
+    let a =
+          fromLists
+            [ [1, 5, 0]
+            , [-3, 2, 7]
+            , [0, 6, -3]
+            ]
+        b =
+          fromLists
+            [ [-6, 1, 1, 6]
+            , [-8, 5, 8, 6]
+            , [-1, 0, 8, 2]
+            , [-7, 1, -1, 1]
+            ]
 
     submatrix a 0 2 `shouldBe` fromList 2 2 [-3, 2, 0, 6]
-    submatrix b 2 1 `shouldBe` fromLists [ [-6, 1, 6]
-                                         , [-8, 8, 6]
-                                         , [-7, -1, 1]
-                                         ]
+    submatrix b 2 1
+      `shouldBe` fromLists
+        [ [-6, 1, 6]
+        , [-8, 8, 6]
+        , [-7, -1, 1]
+        ]
 
   it "Minor" $ do
-    let a = fromLists [ [3, 5, 0]
-                      , [2, -1, -7]
-                      , [6, -1, 5]
-                      ]
+    let a =
+          fromLists
+            [ [3, 5, 0]
+            , [2, -1, -7]
+            , [6, -1, 5]
+            ]
         b = submatrix a 1 0
 
     determinant b `shouldBe` 25
     minor a 1 0 `shouldBe` 25
 
   it "Cofactor" $ do
-    let a = fromLists [ [3, 5, 0]
-                      , [2, -1, -7]
-                      , [6, -1, 5]
-                      ]
+    let a =
+          fromLists
+            [ [3, 5, 0]
+            , [2, -1, -7]
+            , [6, -1, 5]
+            ]
 
     minor a 0 0 `shouldBe` -12
     cofactor a 0 0 `shouldBe` -12
@@ -231,16 +273,20 @@ spec_Matrix = describe "Matrix" $ do
 
   it "Determinant" $ do
     let a = fromList 2 2 [1, 5, -3, 2]
-        b = fromLists [ [1, 2, 6]
-                      , [-5, 8, -4]
-                      , [2, 6, 4]
-                      ]
+        b =
+          fromLists
+            [ [1, 2, 6]
+            , [-5, 8, -4]
+            , [2, 6, 4]
+            ]
 
-        c = fromLists [ [-2, -8, 3, 5]
-                      , [-3, 1, 7, 3]
-                      , [1, 2, -9, 6]
-                      , [-6, 7, 7, -9]
-                      ]
+        c =
+          fromLists
+            [ [-2, -8, 3, 5]
+            , [-3, 1, 7, 3]
+            , [1, 2, -9, 6]
+            , [-6, 7, 7, -9]
+            ]
 
     determinant a `shouldBe` 17
 
@@ -256,16 +302,20 @@ spec_Matrix = describe "Matrix" $ do
     determinant c `shouldBe` -4071
 
   it "Inverse" $ do
-    let a = fromLists [ [6, 4, 4, 4]
-                      , [5, 5, 7, 6]
-                      , [4, -9, 3, -7]
-                      , [9, 1, 7, -6]
-                      ]
-        b = fromLists [ [-4, 2, -2, -3]
-                      , [9, 6, 2, 6]
-                      , [0, -5, 1, -5]
-                      , [0, 0, 0, 0]
-                      ]
+    let a =
+          fromLists
+            [ [6, 4, 4, 4]
+            , [5, 5, 7, 6]
+            , [4, -9, 3, -7]
+            , [9, 1, 7, -6]
+            ]
+        b =
+          fromLists
+            [ [-4, 2, -2, -3]
+            , [9, 6, 2, 6]
+            , [0, -5, 1, -5]
+            , [0, 0, 0, 0]
+            ]
 
     determinant a `shouldBe` -2120
     isInvertable a `shouldBe` True

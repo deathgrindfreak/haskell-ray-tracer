@@ -1,22 +1,22 @@
-{-# LANGUAGE DeriveFunctor          #-}
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FunctionalDependencies #-}
 
 module RayTracer.Tuple
-  ( Vec(..)
-  , Point(..)
-  , Scalar(..)
-  , VecAdd((|+|))
-  , VecSub((|-|))
-  , VecMult((|*|))
-  , cross
-  , dot
-  , magnitude
-  , norm
-  , reflect
+  ( Vec (..),
+    Point (..),
+    Scalar (..),
+    VecAdd ((|+|)),
+    VecSub ((|-|)),
+    VecMult ((|*|)),
+    cross,
+    dot,
+    magnitude,
+    norm,
+    reflect,
   ) where
 
-import           Test.QuickCheck          (Arbitrary (arbitrary))
-import           Test.QuickCheck.Checkers (EqProp, eq, (=-=))
+import Test.QuickCheck (Arbitrary (arbitrary))
+import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
 
 infixl 7 |*|
 infixl 6 |-|
@@ -24,7 +24,7 @@ infixl 6 |+|
 
 data Vec a = Vec !a !a !a deriving (Show, Eq, Functor)
 data Point a = Point !a !a !a deriving (Show, Eq, Functor)
-newtype Scalar a = Scalar { fromScalar :: a } deriving (Show, Eq)
+newtype Scalar a = Scalar {fromScalar :: a} deriving (Show, Eq)
 
 instance Applicative Vec where
   pure a = Vec a a a
@@ -97,7 +97,7 @@ magnitude (Vec x y z) = sqrt (x * x + y * y + z * z)
 
 {-# SPECIALIZE norm :: Vec Double -> Vec Double #-}
 norm :: (RealFloat a) => Vec a -> Vec a
-norm v@(Vec x y z) = Vec (x/r) (y/r) (z/r) where r = magnitude v
+norm v@(Vec x y z) = Vec (x / r) (y / r) (z / r) where r = magnitude v
 
 {-# SPECIALIZE reflect :: Vec Double -> Vec Double -> Vec Double #-}
 reflect :: (RealFloat a) => Vec a -> Vec a -> Vec a

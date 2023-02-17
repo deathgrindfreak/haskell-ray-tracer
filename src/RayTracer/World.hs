@@ -1,27 +1,26 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
 module RayTracer.World
-  ( World (..)
-  , defaultWorld
-  , intersectWorld
-  , Computation (..)
-  , prepareComputations
+  ( World (..),
+    defaultWorld,
+    intersectWorld,
+    Computation (..),
+    prepareComputations,
   )
 where
 
-import qualified Data.Vector      as V
-import           RayTracer.Color
-import           RayTracer.Light
-import           RayTracer.Matrix
-import           qualified RayTracer.Ray as Ray
-import           RayTracer.Tuple
 import qualified Data.List as List
+import qualified Data.Vector as V
+import RayTracer.Color
+import RayTracer.Light
+import RayTracer.Matrix
+import qualified RayTracer.Ray as Ray
+import RayTracer.Tuple
 
-data World
-  = World
-      { light   :: PointLight
-      , objects :: V.Vector Ray.Object
-      }
+data World = World
+  { light :: PointLight
+  , objects :: V.Vector Ray.Object
+  }
   deriving (Show)
 
 defaultWorld :: World
@@ -32,15 +31,14 @@ defaultWorld =
           , diffuse = 0.7
           , specular = 0.2
           }
-
-  in World
-      { light = PointLight (Point (-10) 10 (-10)) (Color 1 1 1)
-      , objects =
-          V.fromList
-            [ (Ray.makeSphere 0) { Ray.material = materialLarger }
-            , (Ray.makeSphere 1) { Ray.transform = scaling 0.5 0.5 0.5 }
-            ]
-      }
+   in World
+        { light = PointLight (Point (-10) 10 (-10)) (Color 1 1 1)
+        , objects =
+            V.fromList
+              [ (Ray.makeSphere 0) {Ray.material = materialLarger}
+              , (Ray.makeSphere 1) {Ray.transform = scaling 0.5 0.5 0.5}
+              ]
+        }
 
 intersectWorld :: Ray.Ray Double -> World -> [Ray.Intersection]
 intersectWorld ray =
@@ -58,18 +56,18 @@ data Computation = Computation
 
 prepareComputations :: Ray.Intersection -> Ray.Ray Double -> Computation
 prepareComputations i ray =
-  let point  = Ray.position ray (Ray.t i)
+  let point = Ray.position ray (Ray.t i)
       normalv = Ray.normalAt (Ray.object i) point
       eyev = Scalar (-1) |*| Ray.direction ray
       inside = normalv `dot` eyev < 0
-  in Computation
-       { t = Ray.t i
-       , object = Ray.object i
-       , point
-       , eyev
-       , normalv =
-         if inside
-           then Scalar (-1) |*| normalv
-           else normalv
-       , inside
-       }
+   in Computation
+        { t = Ray.t i
+        , object = Ray.object i
+        , point
+        , eyev
+        , normalv =
+            if inside
+              then Scalar (-1) |*| normalv
+              else normalv
+        , inside
+        }
