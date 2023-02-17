@@ -3,32 +3,32 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
 module RayTracer.Matrix
-  ( Matrix (..),
-    Transform,
-    (!),
-    update,
-    dims,
-    (//),
-    elemAt,
-    matrix,
-    fromList,
-    fromLists,
-    toLists,
-    elementwise,
-    identity,
-    submatrix,
-    minor,
-    cofactor,
-    determinant,
-    MatrixLike (..),
-    identityTransform,
-    translation,
-    scaling,
-    rotationX,
-    rotationY,
-    rotationZ,
-    shearing,
-    (|>),
+  ( Matrix (..)
+  , Transform
+  , (!)
+  , update
+  , dims
+  , (//)
+  , elemAt
+  , matrix
+  , fromList
+  , fromLists
+  , toLists
+  , elementwise
+  , identity
+  , submatrix
+  , minor
+  , cofactor
+  , determinant
+  , MatrixLike (..)
+  , identityTransform
+  , translation
+  , scaling
+  , rotationX
+  , rotationY
+  , rotationZ
+  , shearing
+  , (|>)
   )
 where
 

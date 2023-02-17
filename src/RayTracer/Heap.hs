@@ -1,8 +1,8 @@
 module RayTracer.Heap
-  ( LeftistHeap (..),
-    Heap (..),
-    singleton,
-    popMin,
+  ( LeftistHeap (..)
+  , Heap (..)
+  , singleton
+  , popMin
   )
 where
 

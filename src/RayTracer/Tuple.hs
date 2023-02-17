@@ -2,17 +2,17 @@
 {-# LANGUAGE FunctionalDependencies #-}
 
 module RayTracer.Tuple
-  ( Vec (..),
-    Point (..),
-    Scalar (..),
-    VecAdd ((|+|)),
-    VecSub ((|-|)),
-    VecMult ((|*|)),
-    cross,
-    dot,
-    magnitude,
-    norm,
-    reflect,
+  ( Vec (..)
+  , Point (..)
+  , Scalar (..)
+  , VecAdd ((|+|))
+  , VecSub ((|-|))
+  , VecMult ((|*|))
+  , cross
+  , dot
+  , magnitude
+  , norm
+  , reflect
   ) where
 
 import Test.QuickCheck (Arbitrary (arbitrary))

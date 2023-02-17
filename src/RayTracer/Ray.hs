@@ -2,15 +2,15 @@
 {-# LANGUAGE NamedFieldPuns #-}
 
 module RayTracer.Ray
-  ( Ray (..),
-    Object (..),
-    makeSphere,
-    position,
-    Intersection (..),
-    intersections,
-    hit,
-    intersect,
-    normalAt,
+  ( Ray (..)
+  , Object (..)
+  , makeSphere
+  , position
+  , Intersection (..)
+  , intersections
+  , hit
+  , intersect
+  , normalAt
   ) where
 
 import qualified RayTracer.Heap as H

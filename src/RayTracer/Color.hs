@@ -1,6 +1,6 @@
 module RayTracer.Color
-  ( Color (..),
-    toColor,
+  ( Color (..)
+  , toColor
   ) where
 
 import Control.Applicative (Applicative (liftA2))

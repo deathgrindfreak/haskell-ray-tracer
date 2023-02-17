@@ -1,8 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Test.Matrix
-  ( spec_Matrix,
-    test_Matrix,
+  ( spec_Matrix
+  , test_Matrix
   )
 where
 

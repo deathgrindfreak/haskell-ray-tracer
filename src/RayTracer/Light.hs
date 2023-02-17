@@ -1,8 +1,8 @@
 module RayTracer.Light
-  ( PointLight (..),
-    Material (..),
-    defaultMaterial,
-    lighting,
+  ( PointLight (..)
+  , Material (..)
+  , defaultMaterial
+  , lighting
   )
 where
 

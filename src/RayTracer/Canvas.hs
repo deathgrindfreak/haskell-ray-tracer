@@ -3,16 +3,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module RayTracer.Canvas
-  ( Canvas (..),
-    Pixel,
-    makeCanvas,
-    pixelAt,
-    writePixel,
-    writePixels,
-    mapCanvas,
-    canvasToPPM,
-    toIndex,
-    fromIndex,
+  ( Canvas (..)
+  , Pixel
+  , makeCanvas
+  , pixelAt
+  , writePixel
+  , writePixels
+  , mapCanvas
+  , canvasToPPM
+  , toIndex
+  , fromIndex
   ) where
 
 import Data.Bifunctor (first)

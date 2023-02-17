@@ -1,8 +1,8 @@
 module Test.Helper.Approximate
-  ( ApproxEq,
-    Identity (..),
-    shouldApproximate,
-    (~==),
+  ( ApproxEq
+  , Identity (..)
+  , shouldApproximate
+  , (~==)
   )
 where
 
