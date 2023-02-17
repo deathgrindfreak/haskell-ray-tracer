@@ -56,7 +56,6 @@ spec_Ray = describe "Ray" $ do
     let s = makeSphere 0
         i1 = Intersection s 1
         i2 = Intersection s 2
-        xs :: H.LeftistHeap (Intersection (Object Double) Int)
         xs = intersections H.empty [i1, i2]
     hit xs `shouldBe` Just i1
 
@@ -64,7 +63,6 @@ spec_Ray = describe "Ray" $ do
     let s = makeSphere 0
         i1 = Intersection s (-1)
         i2 = Intersection s 2
-        xs :: H.LeftistHeap (Intersection (Object Double) Int)
         xs = intersections H.empty [i1, i2]
     hit xs `shouldBe` Just i2
 
@@ -72,13 +70,11 @@ spec_Ray = describe "Ray" $ do
     let s = makeSphere 0
         i1 = Intersection s (-1)
         i2 = Intersection s (-2)
-        xs :: H.LeftistHeap (Intersection (Object Double) Int)
         xs = intersections H.empty [i1, i2]
     hit xs `shouldBe` Nothing
 
-  prop "Hit is always the lowest non-negative intersections" $ \(ts :: [Int]) -> do
+  prop "Hit is always the lowest non-negative intersections" $ \(ts :: [Double]) -> do
     let s = makeSphere 0
-        xs :: H.LeftistHeap (Intersection (Object Double) Int)
         xs = intersections H.empty (map (Intersection s) ts)
         ints = if any (>= 0) ts
                  then Just (minimum (filter (>= 0) ts))

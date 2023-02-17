@@ -42,7 +42,7 @@ instance Heap LeftistHeap where
         then Tree (rank r + 1) a l r
         else Tree (rank l + 1) a r l
 
-  insert x t = merge (Tree 1 x Empty Empty) t
+  insert x = merge (Tree 1 x Empty Empty)
 
   findMin Empty = Nothing
   findMin (Tree _ x _ _) = Just x

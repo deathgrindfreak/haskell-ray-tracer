@@ -31,8 +31,7 @@ genSquareMatrix n = do
 
 test_Matrix :: Tasty.TestTree
 test_Matrix = do
-  Tasty.testGroup
-    "Matrix"
+  Tasty.testGroup "Matrix"
     [ THH.testProperty "Inverse of Inverse should be original matrix" $
         HH.property $ do
           m <- HH.forAll $ genSquareMatrix 4

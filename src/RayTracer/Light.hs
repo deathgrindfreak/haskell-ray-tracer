@@ -24,7 +24,7 @@ data Material
       , specular      :: Double
       , shininess     :: Double
       }
-  deriving (Show)
+  deriving (Eq, Show)
 
 defaultMaterial :: Material
 defaultMaterial = Material { materialColor = Color 1 1 1
