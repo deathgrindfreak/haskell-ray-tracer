@@ -2,6 +2,7 @@ module Test.World (test_World) where
 
 import RayTracer.Color
 import qualified RayTracer.Light as L
+import qualified RayTracer.Matrix as M
 import qualified RayTracer.Ray as R
 import qualified RayTracer.Tuple as T
 import qualified RayTracer.World as W
@@ -22,7 +23,7 @@ test_World =
         HH.property $ do
           let r = R.Ray (T.Point 0 0 (-5)) (T.Vec 0 0 1)
 
-          map R.t (W.intersectWorld r W.defaultWorld) === [4, 4.5, 5.5, 6]
+          map R.t (W.intersectWorld r defaultWorld) === [4, 4.5, 5.5, 6]
     , THH.testProperty "Precomputing the state of an intersection" $
         HH.property $ do
           let r = R.Ray (T.Point 0 0 (-5)) (T.Vec 0 0 1)
@@ -56,7 +57,7 @@ test_World =
           W.inside comps === True
     , THH.testProperty "Shading an intersection" $
         HH.property $ do
-          let w = W.defaultWorld
+          let w = defaultWorld
               r = R.Ray (T.Point 0 0 (-5)) (T.Vec 0 0 1)
               shape = W.objects w V.! 0
               i = R.Intersection shape 4
@@ -64,7 +65,7 @@ test_World =
           W.shadeHit w comps ~== Color 0.38066 0.47583 0.2855
     , THH.testProperty "Shading an intersection from the inside" $
         HH.property $ do
-          let w = W.defaultWorld {W.light = L.PointLight (T.Point 0 0.25 0) (Color 1 1 1)}
+          let w = defaultWorld {W.light = L.PointLight (T.Point 0 0.25 0) (Color 1 1 1)}
               r = R.Ray (T.Point 0 0 0) (T.Vec 0 0 1)
               shape = W.objects w V.! 1
               i = R.Intersection shape 0.5
@@ -72,25 +73,42 @@ test_World =
           W.shadeHit w comps ~== Color 0.90498 0.90498 0.90498
     , THH.testProperty "The color when a ray misses" $
         HH.property $ do
-          let w = W.defaultWorld
+          let w = defaultWorld
               r = R.Ray (T.Point 0 0 (-5)) (T.Vec 0 1 0)
           W.colorAt w r === Color 0 0 0
     , THH.testProperty "The color when a ray hits" $
         HH.property $ do
-          let w = W.defaultWorld
+          let w = defaultWorld
               r = R.Ray (T.Point 0 0 (-5)) (T.Vec 0 0 1)
           W.colorAt w r ~== Color 0.38066 0.47583 0.2855
     , THH.testProperty "The color with an intersection behind the ray" $
         HH.property $ do
-          let w = darkWorld
+          let w = lightWorld
               inner = W.objects w V.! 1
               r = R.Ray (T.Point 0 0 0.75) (T.Vec 0 0 (-1))
           W.colorAt w r === L.materialColor (R.material inner)
     ]
 
-darkWorld :: W.World
-darkWorld =
-  W.defaultWorld {W.objects = V.map (setAmbient 1) (W.objects W.defaultWorld)}
+defaultWorld :: W.World
+defaultWorld =
+  let materialLarger =
+        L.defaultMaterial
+          { L.materialColor = Color 0.8 1.0 0.6
+          , L.diffuse = 0.7
+          , L.specular = 0.2
+          }
+   in W.World
+        { W.light = L.PointLight (T.Point (-10) 10 (-10)) (Color 1 1 1)
+        , W.objects =
+            V.fromList
+              [ (R.makeSphere 0) {R.material = materialLarger}
+              , (R.makeSphere 1) {R.transform = M.scaling 0.5 0.5 0.5}
+              ]
+        }
+
+lightWorld :: W.World
+lightWorld =
+  defaultWorld {W.objects = V.map (setAmbient 1) (W.objects defaultWorld)}
   where
     setAmbient a o =
       let m = R.material o

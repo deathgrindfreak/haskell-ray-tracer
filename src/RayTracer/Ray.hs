@@ -7,6 +7,8 @@ module RayTracer.Ray
   , makeSphere
   , position
   , Intersection (..)
+  , Intersections
+  , addIntersections
   , intersections
   , hit
   , intersect
@@ -84,11 +86,13 @@ normalAt Sphere {transform} p =
       worldNormal = transpose (inverse transform) |*| objectNormal
    in norm worldNormal
 
-intersections ::
-  H.LeftistHeap Intersection ->
-  [Intersection] ->
-  H.LeftistHeap Intersection
-intersections h = foldr H.insert h . filter ((>= 0) . t)
+type Intersections = H.LeftistHeap Intersection
 
-hit :: H.LeftistHeap Intersection -> Maybe Intersection
+addIntersections :: Intersections -> [Intersection] -> Intersections
+addIntersections h = foldr H.insert h . filter ((>= 0) . t)
+
+intersections :: [Intersection] -> Intersections
+intersections = addIntersections H.empty
+
+hit :: Intersections -> Maybe Intersection
 hit = H.findMin

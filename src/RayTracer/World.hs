@@ -3,7 +3,6 @@
 
 module RayTracer.World
   ( World (..)
-  , defaultWorld
   , intersectWorld
   , Computation (..)
   , prepareComputations
@@ -16,7 +15,6 @@ import qualified Data.List as List
 import qualified Data.Vector as V
 import RayTracer.Color
 import qualified RayTracer.Light as L
-import RayTracer.Matrix
 import qualified RayTracer.Ray as Ray
 import RayTracer.Tuple
 
@@ -25,23 +23,6 @@ data World = World
   , objects :: V.Vector Ray.Object
   }
   deriving (Show)
-
-defaultWorld :: World
-defaultWorld =
-  let materialLarger =
-        L.defaultMaterial
-          { L.materialColor = Color 0.8 1.0 0.6
-          , L.diffuse = 0.7
-          , L.specular = 0.2
-          }
-   in World
-        { light = L.PointLight (Point (-10) 10 (-10)) (Color 1 1 1)
-        , objects =
-            V.fromList
-              [ (Ray.makeSphere 0) {Ray.material = materialLarger}
-              , (Ray.makeSphere 1) {Ray.transform = scaling 0.5 0.5 0.5}
-              ]
-        }
 
 intersectWorld :: Ray.Ray Double -> World -> [Ray.Intersection]
 intersectWorld ray =
@@ -81,6 +62,7 @@ shadeHit World {light} Computation {..} =
 
 colorAt :: World -> Ray.Ray Double -> Color Double
 colorAt world ray =
-  case intersectWorld ray world of
-    (h : _) -> shadeHit world (prepareComputations h ray)
-    [] -> Color 0 0 0
+  let is = Ray.intersections (intersectWorld ray world)
+   in case Ray.hit is of
+        Just h -> shadeHit world (prepareComputations h ray)
+        Nothing -> Color 0 0 0

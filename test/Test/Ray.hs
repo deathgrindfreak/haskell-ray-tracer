@@ -1,6 +1,5 @@
 module Test.Ray (spec_Ray) where
 
-import qualified RayTracer.Heap as H
 import RayTracer.Light
 import RayTracer.Matrix
 import RayTracer.Ray
@@ -56,26 +55,26 @@ spec_Ray = describe "Ray" $ do
     let s = makeSphere 0
         i1 = Intersection s 1
         i2 = Intersection s 2
-        xs = intersections H.empty [i1, i2]
+        xs = intersections [i1, i2]
     hit xs `shouldBe` Just i1
 
   it "Hit when some intersections have negative t" $ do
     let s = makeSphere 0
         i1 = Intersection s (-1)
         i2 = Intersection s 2
-        xs = intersections H.empty [i1, i2]
+        xs = intersections [i1, i2]
     hit xs `shouldBe` Just i2
 
   it "Hit when all intersections have negative t" $ do
     let s = makeSphere 0
         i1 = Intersection s (-1)
         i2 = Intersection s (-2)
-        xs = intersections H.empty [i1, i2]
+        xs = intersections [i1, i2]
     hit xs `shouldBe` Nothing
 
   prop "Hit is always the lowest non-negative intersections" $ \(ts :: [Double]) -> do
     let s = makeSphere 0
-        xs = intersections H.empty (map (Intersection s) ts)
+        xs = intersections (map (Intersection s) ts)
         ints =
           if any (>= 0) ts
             then Just (minimum (filter (>= 0) ts))

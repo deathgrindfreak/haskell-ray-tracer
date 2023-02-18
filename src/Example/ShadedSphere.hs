@@ -5,7 +5,6 @@ module Example.ShadedSphere (run) where
 import Data.Text.Lazy (Text)
 import RayTracer.Canvas
 import RayTracer.Color
-import qualified RayTracer.Heap as H
 import RayTracer.Light
 import RayTracer.Ray
 import RayTracer.Tuple
@@ -32,7 +31,7 @@ run = canvasToPPM $ mapCanvas determineColor canvas
           ray :: Ray Double
           ray = Ray rayOrigin (norm (pos |-| rayOrigin))
           iss = sphere `intersect` ray
-          inter = hit (intersections H.empty iss)
+          inter = hit (intersections iss)
 
           newColor = case inter of
             Nothing -> color
