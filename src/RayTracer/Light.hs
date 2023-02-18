@@ -64,7 +64,7 @@ lighting m light point eyev normalv =
         if lightDotNormal < 0
           then black
           else
-            let reflectv = reflect (Scalar (-1) |*| lightv) normalv
+            let reflectv = reflect (neg lightv) normalv
                 reflectDotEye = fromScalar $ reflectv |*| eyev
              in if reflectDotEye <= 0
                   then black

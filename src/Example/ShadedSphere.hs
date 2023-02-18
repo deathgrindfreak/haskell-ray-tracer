@@ -38,6 +38,6 @@ run = canvasToPPM $ mapCanvas determineColor canvas
             Just Intersection {object, t = tVal} ->
               let point = position ray tVal
                   normal = normalAt object point
-                  eye = Scalar (-1) |*| direction ray
+                  eye = neg (direction ray)
                in lighting (material object) light point eye normal
        in ((x, y), newColor)

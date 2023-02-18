@@ -5,9 +5,10 @@ module RayTracer.Tuple
   ( Vec (..)
   , Point (..)
   , Scalar (..)
-  , VecAdd ((|+|))
-  , VecSub ((|-|))
-  , VecMult ((|*|))
+  , VecAdd (..)
+  , VecSub (..)
+  , VecMult (..)
+  , Negate(..)
   , cross
   , dot
   , magnitude
@@ -81,6 +82,15 @@ instance VecMult Point Scalar Point where
 
 instance VecMult Scalar Scalar Scalar where
   Scalar a |*| Scalar b = Scalar (a * b)
+
+class Negate v where
+  neg :: (Num a, Eq a) => v a -> v a
+
+instance Negate Point where
+  neg p = Scalar (-1) |*| p
+
+instance Negate Vec where
+  neg v = Scalar (-1) |*| v
 
 {-# SPECIALIZE cross :: Vec Double -> Vec Double -> Vec Double #-}
 cross :: (Num a) => Vec a -> Vec a -> Vec a

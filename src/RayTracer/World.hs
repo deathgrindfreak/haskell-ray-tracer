@@ -42,7 +42,7 @@ prepareComputations :: Ray.Intersection -> Ray.Ray Double -> Computation
 prepareComputations i ray =
   let point = Ray.position ray (Ray.t i)
       normalv = Ray.normalAt (Ray.object i) point
-      eyev = Scalar (-1) |*| Ray.direction ray
+      eyev = neg $ Ray.direction ray
       inside = normalv `dot` eyev < 0
    in Computation
         { t = Ray.t i
@@ -51,7 +51,7 @@ prepareComputations i ray =
         , eyev
         , normalv =
             if inside
-              then Scalar (-1) |*| normalv
+              then neg normalv
               else normalv
         , inside
         }
