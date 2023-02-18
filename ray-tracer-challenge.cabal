@@ -73,6 +73,7 @@ test-suite spec
       Test.Light
       Test.Matrix
       Test.Ray
+      Test.Transform
       Test.Tuple
       Test.World
       Paths_ray_tracer_challenge

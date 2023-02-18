@@ -2,6 +2,7 @@
 
 module RayTracer.Transform
   ( Transform
+  , toMatrix
   , identityTransform
   , translation
   , scaling
@@ -9,6 +10,7 @@ module RayTracer.Transform
   , rotationY
   , rotationZ
   , shearing
+  , viewTransform
   , (|>)
   )
 where
@@ -18,8 +20,7 @@ import Test.QuickCheck hiding (elements)
 import RayTracer.Matrix
 import RayTracer.Tuple
 
-newtype Transform a
-  = Transform (Matrix a)
+newtype Transform a = Transform {toMatrix :: Matrix a}
 
 instance MatrixLike Transform where
   isInvertable _ = True
@@ -109,6 +110,27 @@ shearing xy xz yx yz zx zy =
       , [zx, zy, 1, 0]
       , [0, 0, 0, 1]
       ]
+
+viewTransform ::
+  Point Double ->
+  Point Double ->
+  Vec Double ->
+  Transform Double
+viewTransform from to up =
+  let forward = norm (to |-| from)
+      left = forward `cross` (norm up)
+      trueUp = left `cross` forward
+      m =
+        fromLists
+          [ toRow left
+          , toRow trueUp
+          , toRow (Scalar (-1) |*| forward)
+          , [0, 0, 0, 1]
+          ]
+   in Transform m |*| (applyT translation (Scalar (-1) |*| from))
+  where
+    toRow (Vec x y z) = [x, y, z, 0]
+    applyT f (Point x y z) =  f x y z
 
 (|>) :: Num a => Transform a -> Transform a -> Transform a
 Transform a |> Transform b = Transform (b * a)
