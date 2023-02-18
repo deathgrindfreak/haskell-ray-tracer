@@ -18,6 +18,7 @@ import Test.QuickCheck.Checkers hiding (inverse)
 import Test.QuickCheck.Classes
 
 import RayTracer.Matrix
+import RayTracer.Transform
 import RayTracer.Tuple
 import Test.Helper.Approximate
 import Test.Hspec

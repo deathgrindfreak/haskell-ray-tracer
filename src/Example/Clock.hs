@@ -3,7 +3,7 @@ module Example.Clock (run) where
 import Data.Text.Lazy (Text)
 import RayTracer.Canvas
 import RayTracer.Color
-import RayTracer.Matrix
+import RayTracer.Transform
 import RayTracer.Tuple
 
 run :: Text

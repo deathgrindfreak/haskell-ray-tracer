@@ -33,6 +33,7 @@ library
       Example.SimpleSphere
       Example.ShadedSphere
   other-modules:
+      RayTracer.Transform
       Paths_ray_tracer_challenge
   hs-source-dirs:
       src

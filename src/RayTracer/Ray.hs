@@ -18,6 +18,7 @@ module RayTracer.Ray
 import qualified RayTracer.Heap as H
 import RayTracer.Light
 import RayTracer.Matrix
+import RayTracer.Transform
 import RayTracer.Tuple
 
 import Data.Function (on)

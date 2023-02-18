@@ -1,8 +1,8 @@
 module Test.Ray (spec_Ray) where
 
 import RayTracer.Light
-import RayTracer.Matrix
 import RayTracer.Ray
+import RayTracer.Transform
 import RayTracer.Tuple
 import Test.Helper.Approximate
 import Test.Hspec

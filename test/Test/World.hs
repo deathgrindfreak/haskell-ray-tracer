@@ -2,8 +2,8 @@ module Test.World (test_World) where
 
 import RayTracer.Color
 import qualified RayTracer.Light as L
-import qualified RayTracer.Matrix as M
 import qualified RayTracer.Ray as R
+import qualified RayTracer.Transform as M
 import qualified RayTracer.Tuple as T
 import qualified RayTracer.World as W
 import Test.Helper.Approximate ((~==))
