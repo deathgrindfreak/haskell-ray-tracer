@@ -23,3 +23,8 @@ Rendering our first image of a sphere in Chapter 5
 Adding some shading in Chapter 6
 
 ![Shaded Sphere](./img/shaded_sphere.png)
+
+### Scene
+Created a scene from simple spheres in Chapter 7
+
+![Scene](./img/scene.png)

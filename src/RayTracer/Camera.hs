@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module RayTracer.Camera
@@ -8,12 +9,12 @@ module RayTracer.Camera
   )
 where
 
+import RayTracer.Canvas
 import RayTracer.Matrix (inverse)
 import RayTracer.Ray (Ray (..))
 import RayTracer.Transform (Transform)
 import RayTracer.Tuple
 import RayTracer.World
-import RayTracer.Canvas
 
 data Camera = Camera
   { hsize :: Int
@@ -61,6 +62,6 @@ render camera@Camera {..} world =
         [ let ray = rayForPixel camera x y
               color = colorAt world ray
            in ((x, y), color)
-        | y <- [0..vsize - 1]
-        , x <- [0..hsize - 1]
+        | y <- [0 .. vsize - 1]
+        , x <- [0 .. hsize - 1]
         ]

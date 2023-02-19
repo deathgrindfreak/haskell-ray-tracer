@@ -40,19 +40,6 @@ library:
     - text
     - QuickCheck
     - checkers
-  exposed-modules:
-    - RayTracer.Color
-    - RayTracer.Canvas
-    - RayTracer.Tuple
-    - RayTracer.Matrix
-    - RayTracer.Heap
-    - RayTracer.Ray
-    - RayTracer.Light
-    - RayTracer.World
-    - Example.Projectile
-    - Example.Clock
-    - Example.SimpleSphere
-    - Example.ShadedSphere
 
 executables:
   ray-tracer:

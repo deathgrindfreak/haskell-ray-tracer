@@ -20,21 +20,22 @@ extra-source-files:
 
 library
   exposed-modules:
-      RayTracer.Color
-      RayTracer.Canvas
-      RayTracer.Tuple
-      RayTracer.Matrix
-      RayTracer.Heap
-      RayTracer.Ray
-      RayTracer.Light
-      RayTracer.World
-      Example.Projectile
       Example.Clock
-      Example.SimpleSphere
+      Example.Projectile
+      Example.Scene
       Example.ShadedSphere
-  other-modules:
+      Example.SimpleSphere
       RayTracer.Camera
+      RayTracer.Canvas
+      RayTracer.Color
+      RayTracer.Heap
+      RayTracer.Light
+      RayTracer.Matrix
+      RayTracer.Ray
       RayTracer.Transform
+      RayTracer.Tuple
+      RayTracer.World
+  other-modules:
       Paths_ray_tracer_challenge
   hs-source-dirs:
       src
