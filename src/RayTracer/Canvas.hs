@@ -48,8 +48,8 @@ writePixel :: Pixel -> Canvas -> Canvas
 writePixel (coord, color) c =
   c {pixels = pixels c V.// [(toIndex c coord, color)]}
 
-writePixels :: [Pixel] -> Canvas -> Canvas
-writePixels coords c =
+writePixels :: Canvas -> [Pixel] -> Canvas
+writePixels c coords =
   c {pixels = pixels c V.// map (first (toIndex c)) (filter (inBounds c . fst) coords)}
 
 mapCanvas :: (Pixel -> Pixel) -> Canvas -> Canvas

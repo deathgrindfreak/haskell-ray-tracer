@@ -36,7 +36,7 @@ run =
       points = plotProjectile projectile environment
       flippedPoints = map (\(x, y) -> ((x, height canvas - y), color)) points
       squaredPoints = concatMap addNeighbors flippedPoints
-   in canvasToPPM . (`writePixels` canvas) $ squaredPoints
+   in canvasToPPM . (writePixels canvas) $ squaredPoints
   where
     addNeighbors ((x, y), c) = [((x + i, y + j), c) | i <- [-1 .. 1], j <- [-1 .. 1]]
 

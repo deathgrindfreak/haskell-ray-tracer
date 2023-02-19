@@ -6,6 +6,8 @@ import qualified RayTracer.Ray as R
 import qualified RayTracer.Transform as M
 import qualified RayTracer.Tuple as T
 import qualified RayTracer.World as W
+import qualified RayTracer.Camera as Camera
+import qualified RayTracer.Canvas as Canvas
 import Test.Helper.Approximate ((~==))
 
 import qualified Data.Vector as V
@@ -87,6 +89,16 @@ test_World =
               inner = W.objects w V.! 1
               r = R.Ray (T.Point 0 0 0.75) (T.Vec 0 0 (-1))
           W.colorAt w r === L.materialColor (R.material inner)
+    , THH.testProperty "" $
+        HH.property $ do
+          let w = defaultWorld
+              from = T.Point 0 0 (-5)
+              to = T.Point 0 0 0
+              up = T.Vec 0 1 0
+              t = M.viewTransform from to up
+              c = Camera.mkCamera 11 11 (pi / 2) t
+              image = Camera.render c w
+          Canvas.pixelAt (5, 5) image ~== Color 0.38066 0.47583 0.2855
     ]
 
 defaultWorld :: W.World

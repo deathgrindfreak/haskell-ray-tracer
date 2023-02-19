@@ -4,6 +4,7 @@ module RayTracer.Camera
   ( Camera (..)
   , mkCamera
   , rayForPixel
+  , render
   )
 where
 
@@ -11,6 +12,8 @@ import RayTracer.Matrix (inverse)
 import RayTracer.Ray (Ray (..))
 import RayTracer.Transform (Transform)
 import RayTracer.Tuple
+import RayTracer.World
+import RayTracer.Canvas
 
 data Camera = Camera
   { hsize :: Int
@@ -39,13 +42,25 @@ mkCamera hsize vsize fieldOfView transform =
         , transform = transform
         }
 
-rayForPixel :: Camera -> Double -> Double -> Ray Double
+rayForPixel :: Camera -> Int -> Int -> Ray Double
 rayForPixel Camera {..} px py =
-  let xoffset = (px + 0.5) * pixelSize
-      yoffset = (py + 0.5) * pixelSize
+  let xoffset = (fromIntegral px + 0.5) * pixelSize
+      yoffset = (fromIntegral py + 0.5) * pixelSize
       worldx = halfWidth - xoffset
       worldy = halfHeight - yoffset
       pixel = inverse transform |*| Point worldx worldy (-1)
       origin = inverse transform |*| Point 0 0 0
       direction = norm (pixel |-| origin)
    in Ray origin direction
+
+render :: Camera -> World -> Canvas
+render camera@Camera {..} world =
+  let image = makeCanvas (hsize, vsize)
+   in writePixels
+        image
+        [ let ray = rayForPixel camera x y
+              color = colorAt world ray
+           in ((x, y), color)
+        | y <- [0..vsize - 1]
+        , x <- [0..hsize - 1]
+        ]
