@@ -130,7 +130,7 @@ viewTransform from to up =
    in Transform m |*| (applyT translation (neg from))
   where
     toRow (Vec x y z) = [x, y, z, 0]
-    applyT f (Point x y z) =  f x y z
+    applyT f (Point x y z) = f x y z
 
 (|>) :: Num a => Transform a -> Transform a -> Transform a
 Transform a |> Transform b = Transform (b * a)

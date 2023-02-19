@@ -33,6 +33,7 @@ library
       Example.SimpleSphere
       Example.ShadedSphere
   other-modules:
+      RayTracer.Camera
       RayTracer.Transform
       Paths_ray_tracer_challenge
   hs-source-dirs:
@@ -67,6 +68,7 @@ test-suite spec
   type: exitcode-stdio-1.0
   main-is: Driver.hs
   other-modules:
+      Test.Camera
       Test.Canvas
       Test.Color
       Test.Helper.Approximate

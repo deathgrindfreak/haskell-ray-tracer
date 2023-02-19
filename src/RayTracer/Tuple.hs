@@ -8,7 +8,7 @@ module RayTracer.Tuple
   , VecAdd (..)
   , VecSub (..)
   , VecMult (..)
-  , Negate(..)
+  , Negate (..)
   , cross
   , dot
   , magnitude
