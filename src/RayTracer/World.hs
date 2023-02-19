@@ -3,6 +3,7 @@
 
 module RayTracer.World
   ( World (..)
+  , mkWorld
   , intersectWorld
   , Computation (..)
   , prepareComputations
@@ -20,9 +21,16 @@ import RayTracer.Tuple
 
 data World = World
   { light :: L.PointLight
-  , objects :: V.Vector Ray.Object
+  , objects :: V.Vector (Ray.Object Ray.HasId)
   }
   deriving (Show)
+
+mkWorld :: L.PointLight -> [Ray.Object Ray.NoId] -> World
+mkWorld light objects =
+  World
+    { light
+    , objects = V.imap (\oId o -> o {Ray.objectId = oId}) (V.fromList objects)
+    }
 
 intersectWorld :: Ray.Ray Double -> World -> [Ray.Intersection]
 intersectWorld ray =
@@ -30,7 +38,7 @@ intersectWorld ray =
 
 data Computation = Computation
   { t :: Double
-  , object :: Ray.Object
+  , object :: Ray.Object Ray.HasId
   , point :: Point Double
   , eyev :: Vec Double
   , normalv :: Vec Double

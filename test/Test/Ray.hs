@@ -5,6 +5,7 @@ import RayTracer.Ray
 import RayTracer.Transform
 import RayTracer.Tuple
 import Test.Helper.Approximate
+import Test.Helper.Util
 import Test.Hspec
 
 import Data.Maybe (isNothing)

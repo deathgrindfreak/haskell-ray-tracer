@@ -73,6 +73,7 @@ test-suite spec
       Test.Canvas
       Test.Color
       Test.Helper.Approximate
+      Test.Helper.Util
       Test.Light
       Test.Matrix
       Test.Ray

@@ -19,7 +19,7 @@ run = canvasToPPM $ mapCanvas determineColor canvas
 
     canvas = makeCanvas (canvasPixels, canvasPixels)
     sphereMaterial = defaultMaterial {materialColor = Color 1 0.2 1}
-    sphere = (makeSphere 0) {material = sphereMaterial}
+    sphere = defaultSphere {objectId = 0, material = sphereMaterial}
     light = PointLight (Point (-10) 10 (-10)) (Color 1 1 1)
 
     rayOrigin = Point 0 0 (-5)

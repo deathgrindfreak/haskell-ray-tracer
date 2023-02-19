@@ -9,6 +9,7 @@ import qualified RayTracer.Transform as M
 import qualified RayTracer.Tuple as T
 import qualified RayTracer.World as W
 import Test.Helper.Approximate ((~==))
+import Test.Helper.Util
 
 import qualified Data.Vector as V
 
@@ -29,7 +30,7 @@ test_World =
     , THH.testProperty "Precomputing the state of an intersection" $
         HH.property $ do
           let r = R.Ray (T.Point 0 0 (-5)) (T.Vec 0 0 1)
-              shape = R.makeSphere 0
+              shape = makeSphere 0
               i = R.Intersection shape 4
               comps = W.prepareComputations i r
 
@@ -41,7 +42,7 @@ test_World =
     , THH.testProperty "The hit, when an intersection occurs on the outside" $
         HH.property $ do
           let r = R.Ray (T.Point 0 0 (-5)) (T.Vec 0 0 1)
-              shape = R.makeSphere 0
+              shape = makeSphere 0
               i = R.Intersection shape 4
               comps = W.prepareComputations i r
 
@@ -49,7 +50,7 @@ test_World =
     , THH.testProperty "The hit, when an intersection occurs on the inside" $
         HH.property $ do
           let r = R.Ray (T.Point 0 0 0) (T.Vec 0 0 1)
-              shape = R.makeSphere 0
+              shape = makeSphere 0
               i = R.Intersection shape 1
               comps = W.prepareComputations i r
 
@@ -113,8 +114,8 @@ defaultWorld =
         { W.light = L.PointLight (T.Point (-10) 10 (-10)) (Color 1 1 1)
         , W.objects =
             V.fromList
-              [ (R.makeSphere 0) {R.material = materialLarger}
-              , (R.makeSphere 1) {R.transform = M.scaling 0.5 0.5 0.5}
+              [ (makeSphere 0) {R.material = materialLarger}
+              , (makeSphere 1) {R.transform = M.scaling 0.5 0.5 0.5}
               ]
         }
 

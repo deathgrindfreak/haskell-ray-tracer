@@ -4,7 +4,9 @@
 module RayTracer.Ray
   ( Ray (..)
   , Object (..)
-  , makeSphere
+  , defaultSphere
+  , NoId
+  , HasId
   , position
   , Intersection (..)
   , Intersections
@@ -35,23 +37,26 @@ instance VecMult Ray Transform Ray where
 instance VecMult Transform Ray Ray where
   t |*| Ray o d = Ray (t |*| o) (t |*| d)
 
-data Object = Sphere
-  { objectId :: Int
+type NoId = ()
+type HasId = Int
+
+data Object objectId = Sphere
+  { objectId :: objectId
   , transform :: Transform Double
   , material :: Material
   }
   deriving (Eq, Show)
 
-makeSphere :: Int -> Object
-makeSphere objectId =
+defaultSphere :: Object NoId
+defaultSphere =
   Sphere
-    { objectId
+    { objectId = ()
     , transform = identityTransform
     , material = defaultMaterial
     }
 
 data Intersection = Intersection
-  { object :: Object
+  { object :: Object HasId
   , t :: Double
   }
   deriving (Show)
@@ -65,7 +70,7 @@ instance Ord Intersection where
 position :: (Num a, Eq a) => Ray a -> a -> Point a
 position Ray {origin, direction} t = origin |+| direction |*| Scalar t
 
-intersect :: Object -> Ray Double -> [Intersection]
+intersect :: Object HasId -> Ray Double -> [Intersection]
 intersect o@Sphere {transform} r =
   let ray = inverse transform |*| r
       sphereToRay = origin ray |-| Point 0 0 0
@@ -80,7 +85,7 @@ intersect o@Sphere {transform} r =
               t2 = (-b + sqrt d) / (2 * a)
            in map (Intersection o) [t1, t2]
 
-normalAt :: Object -> Point Double -> Vec Double
+normalAt :: Object HasId -> Point Double -> Vec Double
 normalAt Sphere {transform} p =
   let objectPoint = inverse transform |*| p
       objectNormal = objectPoint |-| Point 0 0 0

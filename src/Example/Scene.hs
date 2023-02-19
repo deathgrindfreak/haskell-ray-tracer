@@ -1,7 +1,6 @@
 module Example.Scene (run) where
 
 import Data.Text.Lazy (Text)
-import qualified Data.Vector as V
 import RayTracer.Camera hiding (transform)
 import RayTracer.Canvas
 import RayTracer.Color
@@ -27,13 +26,13 @@ run =
           }
 
       sceneFloor =
-        (makeSphere 0)
+        defaultSphere
           { transform = scaling 10 0.01 10
           , material = wallMaterial
           }
 
       leftWall =
-        (makeSphere 1)
+        defaultSphere
           { transform =
               scaling 10 0.01 10
                 |> rotationX (pi / 2)
@@ -43,7 +42,7 @@ run =
           }
 
       rightWall =
-        (makeSphere 2)
+        defaultSphere
           { transform =
               scaling 10 0.01 10
                 |> rotationX (pi / 2)
@@ -53,7 +52,7 @@ run =
           }
 
       middle =
-        (makeSphere 3)
+        defaultSphere
           { transform = translation (-0.5) 1 0.5
           , material =
               defaultMaterial
@@ -64,7 +63,7 @@ run =
           }
 
       right =
-        (makeSphere 4)
+        defaultSphere
           { transform =
               scaling 0.5 0.5 0.5
                 |> translation (1.5) 0.5 (-0.5)
@@ -77,7 +76,7 @@ run =
           }
 
       left =
-        (makeSphere 5)
+        (defaultSphere)
           { transform =
               scaling 0.33 0.33 0.33
                 |> translation (-1.5) 0.33 (-0.75)
@@ -90,16 +89,7 @@ run =
           }
 
       world =
-        World
-          { light = PointLight (Point (-10) 10 (-10)) (Color 1 1 1)
-          , objects =
-              V.fromList
-                [ sceneFloor
-                , leftWall
-                , rightWall
-                , middle
-                , right
-                , left
-                ]
-          }
+        mkWorld
+          (PointLight (Point (-10) 10 (-10)) (Color 1 1 1))
+          [sceneFloor, leftWall, rightWall, middle, right, left]
    in canvasToPPM $ render camera world
