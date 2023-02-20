@@ -46,6 +46,7 @@ library
       QuickCheck
     , base
     , checkers
+    , lens
     , text
     , vector
   default-language: Haskell2010
@@ -93,6 +94,7 @@ test-suite spec
     , checkers
     , hedgehog
     , hspec
+    , lens
     , ray-tracer-challenge
     , tasty
     , tasty-discover

@@ -38,6 +38,7 @@ library:
     - base
     - vector
     - text
+    - lens
     - QuickCheck
     - checkers
 
@@ -73,6 +74,7 @@ tests:
       - base
       - text
       - vector
+      - lens
       - hspec
       - tasty
       - tasty-discover

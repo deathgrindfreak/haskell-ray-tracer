@@ -1,7 +1,7 @@
 module Test.Light (spec_Light) where
 
 import RayTracer.Color
-import RayTracer.Light
+import RayTracer.Light hiding (position)
 import RayTracer.Tuple
 import Test.Helper.Approximate
 import Test.Hspec

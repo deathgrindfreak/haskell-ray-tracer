@@ -1,6 +1,6 @@
 module Test.Ray (spec_Ray) where
 
-import RayTracer.Light
+import RayTracer.Light hiding (position)
 import RayTracer.Ray
 import RayTracer.Transform
 import RayTracer.Tuple
@@ -8,6 +8,7 @@ import Test.Helper.Approximate
 import Test.Helper.Util
 import Test.Hspec
 
+import Control.Lens ((^.))
 import Data.Maybe (isNothing)
 import Test.Hspec.QuickCheck
 import Test.QuickCheck (classify)
@@ -81,7 +82,7 @@ spec_Ray = describe "Ray" $ do
             then Just (minimum (filter (>= 0) ts))
             else Nothing
     classify (isNothing ints) "No intersections" $
-      t <$> hit xs `shouldBe` ints
+      (^. t) <$> hit xs `shouldBe` ints
 
   it "Translating a ray" $ do
     let r :: Ray Double
@@ -100,9 +101,9 @@ spec_Ray = describe "Ray" $ do
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
         s =
           Sphere
-            { objectId = 0
-            , transform = scaling 2 2 2
-            , material = defaultMaterial
+            { _objectId = 0
+            , _transform = scaling 2 2 2
+            , _material = defaultMaterial
             }
         xs = s `intersect` r
     xs `shouldBe` map (Intersection s) [3, 7]
@@ -112,9 +113,9 @@ spec_Ray = describe "Ray" $ do
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
         s =
           Sphere
-            { objectId = 0
-            , transform = translation 5 0 0
-            , material = defaultMaterial
+            { _objectId = 0
+            , _transform = translation 5 0 0
+            , _material = defaultMaterial
             }
         xs = s `intersect` r
     xs `shouldBe` []

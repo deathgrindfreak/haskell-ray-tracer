@@ -1,76 +1,88 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module RayTracer.World
   ( World (..)
+  , light
+  , objects
   , mkWorld
   , intersectWorld
   , Computation (..)
+  , intersection
+  , point
+  , eyev
+  , normalv
+  , inside
   , prepareComputations
   , shadeHit
   , colorAt
   )
 where
 
+import Control.Lens hiding (inside)
 import qualified Data.List as List
 import qualified Data.Vector as V
 import RayTracer.Color
 import qualified RayTracer.Light as L
-import qualified RayTracer.Ray as Ray
+import qualified RayTracer.Ray as R
 import RayTracer.Tuple
 
 data World = World
-  { light :: L.PointLight
-  , objects :: V.Vector (Ray.Object Ray.HasId)
+  { _light :: L.PointLight
+  , _objects :: V.Vector (R.Object R.HasId)
   }
   deriving (Show)
-
-mkWorld :: L.PointLight -> [Ray.Object Ray.NoId] -> World
-mkWorld light objects =
-  World
-    { light
-    , objects = V.imap (\oId o -> o {Ray.objectId = oId}) (V.fromList objects)
-    }
-
-intersectWorld :: Ray.Ray Double -> World -> [Ray.Intersection]
-intersectWorld ray =
-  List.sortOn Ray.t . V.foldr (\x a -> a ++ Ray.intersect x ray) [] . objects
 
 data Computation = Computation
-  { t :: Double
-  , object :: Ray.Object Ray.HasId
-  , point :: Point Double
-  , eyev :: Vec Double
-  , normalv :: Vec Double
-  , inside :: Bool
+  { _intersection :: R.Intersection
+  , _point :: Point Double
+  , _eyev :: Vec Double
+  , _normalv :: Vec Double
+  , _inside :: Bool
   }
   deriving (Show)
 
-prepareComputations :: Ray.Intersection -> Ray.Ray Double -> Computation
+makeLenses ''World
+makeLenses ''Computation
+
+mkWorld :: L.PointLight -> [R.Object R.NoId] -> World
+mkWorld l objs =
+  World
+    { _light = l
+    , _objects = V.imap (\oId o -> o & R.objectId .~ oId) (V.fromList objs)
+    }
+
+intersectWorld :: R.Ray Double -> World -> [R.Intersection]
+intersectWorld ray =
+  List.sortOn (^. R.t) . V.foldr (\x a -> a ++ R.intersect x ray) [] . (^. objects)
+
+prepareComputations :: R.Intersection -> R.Ray Double -> Computation
 prepareComputations i ray =
-  let point = Ray.position ray (Ray.t i)
-      normalv = Ray.normalAt (Ray.object i) point
-      eyev = neg $ Ray.direction ray
-      inside = normalv `dot` eyev < 0
+  let pt = R.position ray (i ^. R.t)
+      nv = R.normalAt (i ^. R.object) pt
+      ev = neg $ ray ^. R.direction
+      insideObj = nv `dot` ev < 0
    in Computation
-        { t = Ray.t i
-        , object = Ray.object i
-        , point
-        , eyev
-        , normalv =
-            if inside
-              then neg normalv
-              else normalv
-        , inside
+        { _intersection = i
+        , _point = pt
+        , _eyev = ev
+        , _normalv = if insideObj then neg nv else nv
+        , _inside = insideObj
         }
 
 shadeHit :: World -> Computation -> Color Double
-shadeHit World {light} Computation {..} =
-  L.lighting (Ray.material object) light point eyev normalv
+shadeHit w c =
+  L.lighting
+    (c ^. intersection . R.object . R.material)
+    (w ^. light)
+    (c ^. point)
+    (c ^. eyev)
+    (c ^. normalv)
 
-colorAt :: World -> Ray.Ray Double -> Color Double
+colorAt :: World -> R.Ray Double -> Color Double
 colorAt world ray =
-  let is = Ray.intersections (intersectWorld ray world)
-   in case Ray.hit is of
+  let is = R.intersections (intersectWorld ray world)
+   in case R.hit is of
         Just h -> shadeHit world (prepareComputations h ray)
         Nothing -> Color 0 0 0

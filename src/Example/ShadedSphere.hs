@@ -2,10 +2,11 @@
 
 module Example.ShadedSphere (run) where
 
+import Control.Lens
 import Data.Text.Lazy (Text)
 import RayTracer.Canvas
 import RayTracer.Color
-import RayTracer.Light
+import RayTracer.Light hiding (position)
 import RayTracer.Ray
 import RayTracer.Tuple
 
@@ -18,13 +19,18 @@ run = canvasToPPM $ mapCanvas determineColor canvas
     pixelSize = wallSize / fromIntegral canvasPixels
 
     canvas = makeCanvas (canvasPixels, canvasPixels)
-    sphereMaterial = defaultMaterial {materialColor = Color 1 0.2 1}
-    sphere = defaultSphere {objectId = 0, material = sphereMaterial}
+    sphereMaterial = defaultMaterial & color .~ Color 1 0.2 1
+
+    sphere =
+      defaultSphere
+        & objectId .~ 0
+        & material .~ sphereMaterial
+
     light = PointLight (Point (-10) 10 (-10)) (Color 1 1 1)
 
     rayOrigin = Point 0 0 (-5)
 
-    determineColor ((x, y), color) =
+    determineColor ((x, y), c) =
       let wx = -half + pixelSize * fromIntegral x
           wy = half - pixelSize * fromIntegral y
           pos = Point wx wy 10
@@ -34,10 +40,10 @@ run = canvasToPPM $ mapCanvas determineColor canvas
           inter = hit (intersections iss)
 
           newColor = case inter of
-            Nothing -> color
-            Just Intersection {object, t = tVal} ->
-              let point = position ray tVal
-                  normal = normalAt object point
-                  eye = neg (direction ray)
-               in lighting (material object) light point eye normal
+            Nothing -> c
+            Just i ->
+              let point = position ray (i ^. t)
+                  normal = normalAt (i ^. object) point
+                  eye = neg (ray ^. direction)
+               in lighting (i ^. object ^. material) light point eye normal
        in ((x, y), newColor)

@@ -1,18 +1,26 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module RayTracer.Color
   ( Color (..)
+  , red
+  , green
+  , blue
   , toColor
   ) where
 
 import Control.Applicative (Applicative (liftA2))
+import Control.Lens (makeLenses)
 import Test.QuickCheck (Arbitrary, arbitrary)
 import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
 
 data Color a = Color
-  { red :: !a
-  , green :: !a
-  , blue :: !a
+  { _red :: !a
+  , _green :: !a
+  , _blue :: !a
   }
   deriving (Eq, Show)
+
+makeLenses ''Color
 
 instance Arbitrary a => Arbitrary (Color a) where
   arbitrary = Color <$> arbitrary <*> arbitrary <*> arbitrary

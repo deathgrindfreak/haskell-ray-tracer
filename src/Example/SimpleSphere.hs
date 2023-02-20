@@ -1,5 +1,6 @@
 module Example.SimpleSphere (run) where
 
+import Control.Lens
 import Data.Text.Lazy (Text)
 import RayTracer.Canvas
 import RayTracer.Color
@@ -15,7 +16,7 @@ run = canvasToPPM $ mapCanvas determineColor canvas
     pixelSize = wallSize / fromIntegral canvasPixels
 
     canvas = makeCanvas (canvasPixels, canvasPixels)
-    sphere = defaultSphere {objectId = 0}
+    sphere = defaultSphere & objectId .~ 0
     rayOrigin = Point 0 0 (-5)
 
     determineColor ((x, y), color) =
