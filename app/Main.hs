@@ -5,4 +5,4 @@ import Example.Scene
 
 main :: IO ()
 main = do
-  T.writeFile "img/scene.ppm" run
+  T.writeFile "img/shadow.ppm" run

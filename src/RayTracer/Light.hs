@@ -48,13 +48,20 @@ defaultMaterial =
     }
 
 lighting ::
+  -- | material of the hit
   Material ->
+  -- | current global light
   PointLight ->
+  -- | point where hit occurred
   Point Double ->
+  -- | vector pointing to camera
   Vec Double ->
+  -- | vector normal to the surface hit
   Vec Double ->
+  -- | if point was in shadow or not
+  Bool ->
   Color Double
-lighting m light point eyev normalv =
+lighting m light point eyev normalv inShadow =
   let effectiveColor = m ^. color * light ^. intensity
 
       -- Find the direction to the light source
@@ -69,12 +76,12 @@ lighting m light point eyev normalv =
       black = Color 0 0 0
 
       diffuseColor =
-        if lightDotNormal < 0
+        if inShadow || lightDotNormal < 0
           then black
           else effectiveColor * toColor (m ^. diffuse * lightDotNormal)
 
       specularColor =
-        if lightDotNormal < 0
+        if inShadow || lightDotNormal < 0
           then black
           else
             let reflectv = reflect (neg lightv) normalv

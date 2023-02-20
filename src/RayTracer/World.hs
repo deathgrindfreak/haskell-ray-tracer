@@ -11,12 +11,15 @@ module RayTracer.World
   , Computation (..)
   , intersection
   , point
+  , overPoint
   , eyev
   , normalv
   , inside
   , prepareComputations
   , shadeHit
   , colorAt
+  , isShadowed
+  , epsilon
   )
 where
 
@@ -28,6 +31,9 @@ import qualified RayTracer.Light as L
 import qualified RayTracer.Ray as R
 import RayTracer.Tuple
 
+epsilon :: Double
+epsilon = 1e-5
+
 data World = World
   { _light :: L.PointLight
   , _objects :: V.Vector (R.Object R.HasId)
@@ -37,6 +43,7 @@ data World = World
 data Computation = Computation
   { _intersection :: R.Intersection
   , _point :: Point Double
+  , _overPoint :: Point Double
   , _eyev :: Vec Double
   , _normalv :: Vec Double
   , _inside :: Bool
@@ -63,11 +70,13 @@ prepareComputations i ray =
       nv = R.normalAt (i ^. R.object) pt
       ev = neg $ ray ^. R.direction
       insideObj = nv `dot` ev < 0
+      nv' = if insideObj then neg nv else nv
    in Computation
         { _intersection = i
         , _point = pt
+        , _overPoint = pt |+| nv' |*| Scalar epsilon
         , _eyev = ev
-        , _normalv = if insideObj then neg nv else nv
+        , _normalv = nv'
         , _inside = insideObj
         }
 
@@ -79,6 +88,7 @@ shadeHit w c =
     (c ^. point)
     (c ^. eyev)
     (c ^. normalv)
+    (isShadowed w (c ^. overPoint))
 
 colorAt :: World -> R.Ray Double -> Color Double
 colorAt world ray =
@@ -86,3 +96,13 @@ colorAt world ray =
    in case R.hit is of
         Just h -> shadeHit world (prepareComputations h ray)
         Nothing -> Color 0 0 0
+
+isShadowed :: World -> Point Double -> Bool
+isShadowed w p =
+  let v = w ^. light . L.position |-| p
+      distance = magnitude v
+      direction = norm v
+      r = R.Ray p direction
+      is = intersectWorld r w
+      h = R.hit $ R.intersections is
+   in maybe False ((< distance) . (^. R.t)) h

@@ -91,7 +91,7 @@ test_World =
               inner = (w ^. W.objects) V.! 1
               r = R.Ray (T.Point 0 0 0.75) (T.Vec 0 0 (-1))
           W.colorAt w r === inner ^. R.material . L.color
-    , THH.testProperty "" $
+    , THH.testProperty "Rendering a world with a camera" $
         HH.property $ do
           let w = defaultWorld
               from = T.Point 0 0 (-5)
@@ -101,6 +101,47 @@ test_World =
               c = Camera.mkCamera 11 11 (pi / 2) t
               image = Camera.render c w
           Canvas.pixelAt (5, 5) image ~== Color 0.38066 0.47583 0.2855
+    , THH.testProperty "There is no shadow when nothing is collinear with point and light" $
+        HH.property $ do
+          let w = defaultWorld
+              p = T.Point 0 10 0
+          W.isShadowed w p === False
+    , THH.testProperty "The shadow when an object is between the point and the light" $
+        HH.property $ do
+          let w = defaultWorld
+              p = T.Point 10 (-10) 10
+          W.isShadowed w p === True
+    , THH.testProperty "There is no shadow when an object is behind the light" $
+        HH.property $ do
+          let w = defaultWorld
+              p = T.Point (-20) 20 (-20)
+          W.isShadowed w p === False
+    , THH.testProperty "There is no shadow when an object is behind the point" $
+        HH.property $ do
+          let w = defaultWorld
+              p = T.Point (-2) 2 (-2)
+          W.isShadowed w p === False
+    , THH.testProperty "shadeHit is given an intersection in shadow" $
+        HH.property $ do
+          let w = W.mkWorld
+                    (L.PointLight (T.Point 0 0 (-10)) (Color 1 1 1))
+                    [ R.defaultSphere
+                    , R.defaultSphere & R.transform .~ M.translation 0 0 10
+                    ]
+              r = R.Ray (T.Point 0 0 5) (T.Vec 0 0 1)
+              i = R.Intersection ((w ^. W.objects) V.! 1) 4
+              comps = W.prepareComputations i r
+          W.shadeHit w comps ~== Color 0.1 0.1 0.1
+    , THH.testProperty "The hit should offset the point" $
+        HH.property $ do
+          let r = R.Ray (T.Point 0 0 (-5)) (T.Vec 0 0 1)
+              shape = R.defaultSphere
+                        & R.objectId .~ 0
+                        & R.transform .~ M.translation 0 0 1
+              i = R.Intersection shape 5
+              comps = W.prepareComputations i r
+          (comps ^. W.overPoint . T.pz < -W.epsilon / 2) === True
+          (comps ^. W.point . T.pz > comps ^. W.overPoint . T.pz) === True
     ]
 
 defaultWorld :: W.World

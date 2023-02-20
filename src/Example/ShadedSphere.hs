@@ -45,5 +45,5 @@ run = canvasToPPM $ mapCanvas determineColor canvas
               let point = position ray (i ^. t)
                   normal = normalAt (i ^. object) point
                   eye = neg (ray ^. direction)
-               in lighting (i ^. object ^. material) light point eye normal
+               in lighting (i ^. object ^. material) light point eye normal False
        in ((x, y), newColor)

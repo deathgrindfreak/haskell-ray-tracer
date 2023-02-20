@@ -28,3 +28,8 @@ Adding some shading in Chapter 6
 Created a scene from simple spheres in Chapter 7
 
 ![Scene](./img/scene.png)
+
+### Shadows
+Added some shadows in Chapter 8
+
+![Shadow](./img/shadow.png)

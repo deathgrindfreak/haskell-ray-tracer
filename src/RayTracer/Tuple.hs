@@ -1,9 +1,16 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module RayTracer.Tuple
   ( Vec (..)
+  , vx
+  , vy
+  , vz
   , Point (..)
+  , px
+  , py
+  , pz
   , Scalar (..)
   , VecAdd (..)
   , VecSub (..)
@@ -18,14 +25,28 @@ module RayTracer.Tuple
 
 import Test.QuickCheck (Arbitrary (arbitrary))
 import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
+import Control.Lens (makeLenses)
+
+data Vec a = Vec
+  { _vx :: !a
+  , _vy :: !a
+  , _vz :: !a
+  }
+  deriving (Show, Eq, Functor)
+data Point a = Point
+  { _px :: !a
+  , _py :: !a
+  , _pz :: !a
+  }
+  deriving (Show, Eq, Functor)
+newtype Scalar a = Scalar {fromScalar :: a} deriving (Show, Eq)
+
+makeLenses ''Point
+makeLenses ''Vec
 
 infixl 7 |*|
 infixl 6 |-|
 infixl 6 |+|
-
-data Vec a = Vec !a !a !a deriving (Show, Eq, Functor)
-data Point a = Point !a !a !a deriving (Show, Eq, Functor)
-newtype Scalar a = Scalar {fromScalar :: a} deriving (Show, Eq)
 
 instance Applicative Vec where
   pure a = Vec a a a

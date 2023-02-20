@@ -44,9 +44,9 @@ mkCamera hsize vsize fieldOfView transform =
         }
 
 rayForPixel :: Camera -> Int -> Int -> Ray Double
-rayForPixel Camera {..} px py =
-  let xoffset = (fromIntegral px + 0.5) * pixelSize
-      yoffset = (fromIntegral py + 0.5) * pixelSize
+rayForPixel Camera {..} x y =
+  let xoffset = (fromIntegral x + 0.5) * pixelSize
+      yoffset = (fromIntegral y + 0.5) * pixelSize
       worldx = halfWidth - xoffset
       worldy = halfHeight - yoffset
       pixel = inverse transform |*| Point worldx worldy (-1)
