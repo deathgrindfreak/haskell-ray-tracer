@@ -23,9 +23,9 @@ module RayTracer.Tuple
   , reflect
   ) where
 
+import Control.Lens (makeLenses)
 import Test.QuickCheck (Arbitrary (arbitrary))
 import Test.QuickCheck.Checkers (EqProp, eq, (=-=))
-import Control.Lens (makeLenses)
 
 data Vec a = Vec
   { _vx :: !a

@@ -35,8 +35,8 @@ test_World =
               i = R.Intersection shape 4
               comps = W.prepareComputations i r
 
-          comps ^. W.intersection ^. R.t === i ^. R.t
-          comps ^. W.intersection ^. R.object === i ^. R.object
+          comps ^. W.intersection . R.t === i ^. R.t
+          comps ^. W.intersection . R.object === i ^. R.object
           comps ^. W.point === T.Point 0 0 (-1)
           comps ^. W.eyev === T.Vec 0 0 (-1)
           comps ^. W.normalv === T.Vec 0 0 (-1)
@@ -123,11 +123,12 @@ test_World =
           W.isShadowed w p === False
     , THH.testProperty "shadeHit is given an intersection in shadow" $
         HH.property $ do
-          let w = W.mkWorld
-                    (L.PointLight (T.Point 0 0 (-10)) (Color 1 1 1))
-                    [ R.defaultSphere
-                    , R.defaultSphere & R.transform .~ M.translation 0 0 10
-                    ]
+          let w =
+                W.mkWorld
+                  (L.PointLight (T.Point 0 0 (-10)) (Color 1 1 1))
+                  [ R.defaultSphere
+                  , R.defaultSphere & R.transform .~ M.translation 0 0 10
+                  ]
               r = R.Ray (T.Point 0 0 5) (T.Vec 0 0 1)
               i = R.Intersection ((w ^. W.objects) V.! 1) 4
               comps = W.prepareComputations i r
@@ -135,9 +136,10 @@ test_World =
     , THH.testProperty "The hit should offset the point" $
         HH.property $ do
           let r = R.Ray (T.Point 0 0 (-5)) (T.Vec 0 0 1)
-              shape = R.defaultSphere
-                        & R.objectId .~ 0
-                        & R.transform .~ M.translation 0 0 1
+              shape =
+                R.defaultSphere
+                  & R.objectId .~ 0
+                  & R.transform .~ M.translation 0 0 1
               i = R.Intersection shape 5
               comps = W.prepareComputations i r
           (comps ^. W.overPoint . T.pz < -W.epsilon / 2) === True

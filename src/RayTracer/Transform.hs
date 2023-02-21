@@ -119,7 +119,7 @@ viewTransform ::
   Transform Double
 viewTransform from to up =
   let forward = norm (to |-| from)
-      left = forward `cross` (norm up)
+      left = forward `cross` norm up
       trueUp = left `cross` forward
       m =
         fromLists
@@ -128,7 +128,7 @@ viewTransform from to up =
           , toRow (neg forward)
           , [0, 0, 0, 1]
           ]
-   in Transform m |*| (applyT translation (neg from))
+   in Transform m |*| applyT translation (neg from)
   where
     toRow (Vec x y z) = [x, y, z, 0]
     applyT f (Point x y z) = f x y z

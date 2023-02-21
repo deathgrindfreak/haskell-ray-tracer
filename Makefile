@@ -7,6 +7,7 @@ ghcid_test:
 
 format:
 	find * -name '*.hs' | xargs -P0 fourmolu --no-cabal -i
+	hlint .
 
 ghcid:
 	stack exec ghcid -- \

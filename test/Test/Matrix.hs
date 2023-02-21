@@ -41,7 +41,7 @@ test_Matrix = do
           HH.classify "non-invertable" (not . isInvertable $ m)
 
           if isInvertable m
-            then (inverse (inverse m)) ~== m
+            then inverse (inverse m) ~== m
             else safeInverse m === Nothing
     , THH.testProperty "Multiplication by another matrix and inverse should just be the original matrix" $
         HH.property $ do

@@ -81,13 +81,13 @@ instance Ord Intersection where
   compare = on compare (^. t)
 
 position :: (Num a, Eq a) => Ray a -> a -> Point a
-position r t' = r ^. origin |+| r ^. direction |*| Scalar t'
+position r t' = (r ^. origin) |+| (r ^. direction) |*| Scalar t'
 
 intersect :: Object HasId -> Ray Double -> [Intersection]
 intersect o r =
   let ray = inverse (o ^. transform) |*| r
       sphereToRay = (ray ^. origin) |-| Point 0 0 0
-      a = fromScalar $ ray ^. direction |*| ray ^. direction
+      a = fromScalar $ (ray ^. direction) |*| (ray ^. direction)
       b = fromScalar $ Scalar 2 |*| ray ^. direction |*| sphereToRay
       c = fromScalar $ sphereToRay |*| sphereToRay |-| Scalar 1
       d = b * b - 4 * a * c

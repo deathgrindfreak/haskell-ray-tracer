@@ -62,7 +62,7 @@ run =
         defaultSphere
           & transform
             .~ scaling 0.5 0.5 0.5
-              |> translation (1.5) 0.5 (-0.5)
+              |> translation 1.5 0.5 (-0.5)
           & material
             .~ ( defaultMaterial
                   & color .~ Color 0.5 1 0.1
