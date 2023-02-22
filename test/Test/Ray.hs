@@ -100,8 +100,9 @@ spec_Ray = describe "Ray" $ do
     let r :: Ray Double
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
         s =
-          Sphere
+          Object
             { _objectId = 0
+            , _shapeType = Sphere
             , _transform = scaling 2 2 2
             , _material = defaultMaterial
             }
@@ -112,8 +113,9 @@ spec_Ray = describe "Ray" $ do
     let r :: Ray Double
         r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
         s =
-          Sphere
+          Object
             { _objectId = 0
+            , _shapeType = Sphere
             , _transform = translation 5 0 0
             , _material = defaultMaterial
             }
@@ -137,11 +139,11 @@ spec_Ray = describe "Ray" $ do
     normalAt s (Point (sqrt 3 / 3) (sqrt 3 / 3) (sqrt 3 / 3)) `shouldBe` Vec (sqrt 3 / 3) (sqrt 3 / 3) (sqrt 3 / 3)
 
   it "Computing the normal on a translated sphere" $ do
-    let s = Sphere 0 (translation 0 1 0) defaultMaterial
+    let s = Object 0 Sphere (translation 0 1 0) defaultMaterial
         n = normalAt s (Point 0 1.70711 (-0.70711))
     n `shouldApproximate` Vec 0 0.70711 (-0.70711)
 
   it "Computing the normal on a transformed sphere" $ do
-    let s = Sphere 0 (rotationZ (pi / 5) |> scaling 1 0.5 1) defaultMaterial
+    let s = Object 0 Sphere (rotationZ (pi / 5) |> scaling 1 0.5 1) defaultMaterial
         n = normalAt s (Point 0 (sqrt 2 / 2) (-sqrt 2 / 2))
     n `shouldApproximate` Vec 0 0.97014 (-0.24254)

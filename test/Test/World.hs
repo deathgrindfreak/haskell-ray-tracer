@@ -126,8 +126,8 @@ test_World =
           let w =
                 W.mkWorld
                   (L.PointLight (T.Point 0 0 (-10)) (Color 1 1 1))
-                  [ R.defaultSphere
-                  , R.defaultSphere & R.transform .~ M.translation 0 0 10
+                  [ R.defaultShape R.Sphere
+                  , R.defaultShape R.Sphere & R.transform .~ M.translation 0 0 10
                   ]
               r = R.Ray (T.Point 0 0 5) (T.Vec 0 0 1)
               i = R.Intersection ((w ^. W.objects) V.! 1) 4
@@ -137,7 +137,7 @@ test_World =
         HH.property $ do
           let r = R.Ray (T.Point 0 0 (-5)) (T.Vec 0 0 1)
               shape =
-                R.defaultSphere
+                R.defaultShape R.Sphere
                   & R.objectId .~ 0
                   & R.transform .~ M.translation 0 0 1
               i = R.Intersection shape 5
@@ -155,8 +155,8 @@ defaultWorld =
           & L.specular .~ 0.2
    in W.mkWorld
         (L.PointLight (T.Point (-10) 10 (-10)) (Color 1 1 1))
-        [ R.defaultSphere & R.material .~ materialLarger
-        , R.defaultSphere & R.transform .~ M.scaling 0.5 0.5 0.5
+        [ R.defaultShape R.Sphere & R.material .~ materialLarger
+        , R.defaultShape R.Sphere & R.transform .~ M.scaling 0.5 0.5 0.5
         ]
 
 lightWorld :: W.World

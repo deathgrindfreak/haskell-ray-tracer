@@ -16,7 +16,7 @@ run = canvasToPPM $ mapCanvas determineColor canvas
     pixelSize = wallSize / fromIntegral canvasPixels
 
     canvas = makeCanvas (canvasPixels, canvasPixels)
-    sphere = defaultSphere & objectId .~ 0
+    sphere = defaultShape Sphere & objectId .~ 0
     rayOrigin = Point 0 0 (-5)
 
     determineColor ((x, y), color) =

@@ -7,10 +7,12 @@ module RayTracer.Ray
   , origin
   , direction
   , Object (..)
+  , Shape (..)
   , objectId
   , transform
   , material
-  , defaultSphere
+  , shapeType
+  , defaultShape
   , NoId
   , HasId
   , position
@@ -40,8 +42,12 @@ data Ray a = Ray
   }
   deriving (Eq, Show)
 
-data Object objectId = Sphere
+data Shape = Sphere | Plane
+  deriving (Eq, Show)
+
+data Object objectId = Object
   { _objectId :: objectId
+  , _shapeType :: Shape
   , _transform :: Transform Double
   , _material :: Material
   }
@@ -66,10 +72,11 @@ instance VecMult Ray Transform Ray where
 instance VecMult Transform Ray Ray where
   tr |*| Ray o d = Ray (tr |*| o) (tr |*| d)
 
-defaultSphere :: Object NoId
-defaultSphere =
-  Sphere
+defaultShape :: Shape -> Object NoId
+defaultShape s =
+  Object
     { _objectId = ()
+    , _shapeType = s
     , _transform = identityTransform
     , _material = defaultMaterial
     }
@@ -85,25 +92,31 @@ position r t' = (r ^. origin) |+| (r ^. direction) |*| Scalar t'
 
 intersect :: Object HasId -> Ray Double -> [Intersection]
 intersect o r =
-  let ray = inverse (o ^. transform) |*| r
-      sphereToRay = (ray ^. origin) |-| Point 0 0 0
-      a = fromScalar $ (ray ^. direction) |*| (ray ^. direction)
-      b = fromScalar $ Scalar 2 |*| ray ^. direction |*| sphereToRay
-      c = fromScalar $ sphereToRay |*| sphereToRay |-| Scalar 1
-      d = b * b - 4 * a * c
-   in if d < 0
-        then []
-        else
-          let t1 = (-b - sqrt d) / (2 * a)
-              t2 = (-b + sqrt d) / (2 * a)
-           in map (Intersection o) [t1, t2]
+  case o ^. shapeType of
+    Sphere ->
+      let ray = inverse (o ^. transform) |*| r
+          sphereToRay = (ray ^. origin) |-| Point 0 0 0
+          a = fromScalar $ (ray ^. direction) |*| (ray ^. direction)
+          b = fromScalar $ Scalar 2 |*| ray ^. direction |*| sphereToRay
+          c = fromScalar $ sphereToRay |*| sphereToRay |-| Scalar 1
+          d = b * b - 4 * a * c
+       in if d < 0
+            then []
+            else
+              let t1 = (-b - sqrt d) / (2 * a)
+                  t2 = (-b + sqrt d) / (2 * a)
+               in map (Intersection o) [t1, t2]
+    Plane -> undefined
 
 normalAt :: Object HasId -> Point Double -> Vec Double
 normalAt o p =
-  let objectPoint = inverse (o ^. transform) |*| p
-      objectNormal = objectPoint |-| Point 0 0 0
-      worldNormal = transpose (inverse (o ^. transform)) |*| objectNormal
-   in norm worldNormal
+  case o ^. shapeType of
+    Sphere ->
+      let objectPoint = inverse (o ^. transform) |*| p
+          objectNormal = objectPoint |-| Point 0 0 0
+          worldNormal = transpose (inverse (o ^. transform)) |*| objectNormal
+       in norm worldNormal
+    Plane -> undefined
 
 type Intersections = H.LeftistHeap Intersection
 

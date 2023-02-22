@@ -20,7 +20,7 @@ run = canvasToPPM $ mapCanvas determineColor canvas
     sphereMaterial = defaultMaterial & color .~ Color 1 0.2 1
 
     sphere =
-      defaultSphere
+      defaultShape Sphere
         & objectId .~ 0
         & material .~ sphereMaterial
 

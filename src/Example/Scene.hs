@@ -26,12 +26,12 @@ run =
           & specular .~ 0
 
       sceneFloor =
-        defaultSphere
+        defaultShape Sphere
           & transform .~ scaling 10 0.01 10
           & material .~ wallMaterial
 
       leftWall =
-        defaultSphere
+        defaultShape Sphere
           & transform
             .~ scaling 10 0.01 10
               |> rotationX (pi / 2)
@@ -40,7 +40,7 @@ run =
           & material .~ wallMaterial
 
       rightWall =
-        defaultSphere
+        defaultShape Sphere
           & transform
             .~ scaling 10 0.01 10
               |> rotationX (pi / 2)
@@ -49,7 +49,7 @@ run =
           & material .~ wallMaterial
 
       middle =
-        defaultSphere
+        defaultShape Sphere
           & transform .~ translation (-0.5) 1 0.5
           & material
             .~ ( defaultMaterial
@@ -59,7 +59,7 @@ run =
                )
 
       right =
-        defaultSphere
+        defaultShape Sphere
           & transform
             .~ scaling 0.5 0.5 0.5
               |> translation 1.5 0.5 (-0.5)
@@ -71,7 +71,7 @@ run =
                )
 
       left =
-        defaultSphere
+        defaultShape Sphere
           & transform
             .~ scaling 0.33 0.33 0.33
               |> translation (-1.5) 0.33 (-0.75)
