@@ -8,7 +8,7 @@ import Test.Helper.Approximate
 import Test.Helper.Util
 import Test.Hspec
 
-import Control.Lens ((^.))
+import Control.Lens hiding ((|>))
 import Data.Maybe (isNothing)
 import Test.Hspec.QuickCheck
 import Test.QuickCheck (classify)
@@ -102,12 +102,24 @@ spec_Ray = describe "Ray" $ do
         s =
           Object
             { _objectId = 0
-            , _shapeType = Sphere
+            , _shape = Sphere
             , _transform = scaling 2 2 2
             , _material = defaultMaterial
             }
         xs = s `intersect` r
     xs `shouldBe` map (Intersection s) [3, 7]
+
+  it "Intersect a scaled shape with a ray" $ do
+    let r :: Ray Double
+        r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
+        s =
+          Object
+            { _objectId = 0
+            , _shape = Sphere
+            , _transform = scaling 2 2 2
+            , _material = defaultMaterial
+            }
+    localRay s r `shouldBe` Ray (Point 0 0 (-2.5)) (Vec 0 0 0.5)
 
   it "Intersect a translated sphere with a ray" $ do
     let r :: Ray Double
@@ -115,12 +127,24 @@ spec_Ray = describe "Ray" $ do
         s =
           Object
             { _objectId = 0
-            , _shapeType = Sphere
+            , _shape = Sphere
             , _transform = translation 5 0 0
             , _material = defaultMaterial
             }
         xs = s `intersect` r
     xs `shouldBe` []
+
+  it "Intersect a translated shape with a ray" $ do
+    let r :: Ray Double
+        r = Ray (Point 0 0 (-5)) (Vec 0 0 1)
+        s =
+          Object
+            { _objectId = 0
+            , _shape = Sphere
+            , _transform = translation 5 0 0
+            , _material = defaultMaterial
+            }
+    localRay s r `shouldBe` Ray (Point (-5) 0 (-5)) (Vec 0 0 1)
 
   it "Normal on a sphere with point on x axis" $ do
     let s = makeSphere 0
@@ -143,7 +167,29 @@ spec_Ray = describe "Ray" $ do
         n = normalAt s (Point 0 1.70711 (-0.70711))
     n `shouldApproximate` Vec 0 0.70711 (-0.70711)
 
+  it "Computing the normal on a translated shape" $ do
+    let s = Object 0 Sphere (translation 0 1 0) defaultMaterial
+        n = testNormalAt s (Point 0 1.70711 (-0.70711))
+    n `shouldApproximate` Vec 0 0.70711 (-0.70711)
+
   it "Computing the normal on a transformed sphere" $ do
     let s = Object 0 Sphere (rotationZ (pi / 5) |> scaling 1 0.5 1) defaultMaterial
         n = normalAt s (Point 0 (sqrt 2 / 2) (-sqrt 2 / 2))
     n `shouldApproximate` Vec 0 0.97014 (-0.24254)
+
+  it "Computing the normal on a transformed shape" $ do
+    let s = Object 0 Sphere (rotationZ (pi / 5) |> scaling 1 0.5 1) defaultMaterial
+        n = testNormalAt s (Point 0 (sqrt 2 / 2) (-sqrt 2 / 2))
+    n `shouldApproximate` Vec 0 0.97014 (-0.24254)
+
+  it "The normal of a plane is constant everywhere" $ do
+    let p = defaultShape Plane & objectId .~ 0
+        n1 = localNormalAt p (Point 0 0 0)
+        n2 = localNormalAt p (Point 10 0 (-10))
+        n3 = localNormalAt p (Point (-5) 0 150)
+    n1 `shouldBe` Vec 0 1 0
+    n2 `shouldBe` Vec 0 1 0
+    n3 `shouldBe` Vec 0 1 0
+
+testNormalAt :: Object HasId -> Point Double -> Vec Double
+testNormalAt s p = normalAtFor s p (\(Point x y z) -> Vec x y z)

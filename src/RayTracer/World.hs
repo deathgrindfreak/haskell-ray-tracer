@@ -30,9 +30,7 @@ import RayTracer.Color
 import qualified RayTracer.Light as L
 import qualified RayTracer.Ray as R
 import RayTracer.Tuple
-
-epsilon :: Double
-epsilon = 1e-5
+import RayTracer.Util
 
 data World = World
   { _light :: L.PointLight

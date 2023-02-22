@@ -1,8 +1,8 @@
 module Main (main) where
 
 import qualified Data.Text.Lazy.IO as T
-import Example.Scene
+import Example.Plane
 
 main :: IO ()
 main = do
-  T.writeFile "img/shadow.ppm" run
+  T.writeFile "img/plane.ppm" run

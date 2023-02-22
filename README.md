@@ -33,3 +33,8 @@ Created a scene from simple spheres in Chapter 7
 Added some shadows in Chapter 8
 
 ![Shadow](./img/shadow.png)
+
+### Plane
+Add planes in Chapter 9
+
+![Plane](./img/plane.png)
